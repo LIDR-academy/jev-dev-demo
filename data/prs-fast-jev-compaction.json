@@ -1,0 +1,267 @@
+{
+  "repo": "tamaratran/fast-jev-compaction",
+  "importedAt": "2026-10-07T03:52:59.009Z",
+  "source": "git",
+  "prs": [
+    {
+      "id": "PR-17",
+      "number": 17,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/17",
+      "title": "README: update tagline to the current tool-call scoring design",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T22:29:18+00:00",
+      "files": [
+        "README.md"
+      ],
+      "changedFiles": 1,
+      "additions": 4,
+      "deletions": 1,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### README.md\n@@ -1,6 +1,9 @@\n-Continuous context compaction for LLM agents using TypeSafe's Jev model.\n+Claude Code plugin that replaces the compaction summary with Jev decisions:\n+every tool call and result is scored in one fast request, stale ones are\n+dropped or truncated, everything kept stays verbatim. Also usable as an npm\n+library."
+    },
+    {
+      "id": "PR-16",
+      "number": 16,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/16",
+      "title": "Split the per-call decision log into ui.log lines under the 4096-char host limit",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T22:00:10+00:00",
+      "files": [
+        "hooks/fast-jev.ts",
+        "tests/hook.test.ts"
+      ],
+      "changedFiles": 2,
+      "additions": 40,
+      "deletions": 1,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### hooks/fast-jev.ts\n@@ -189,6 +189,8 @@ export function summarize(result: CompactResult): string {\n+const UI_LOG_MAX_CHARS = 4096;\n+\n@@ -199,6 +201,29 @@ export function decisionLog(result: CompactResult): string {\n+export function decisionLogLines(\n+  result: CompactResult,\n+  maxChars: number = UI_LOG_MAX_CHARS,\n+): string[] {\n+  const entries = decisionLog(result).split(' ').filter(Boolean);\n+  if (entries.length === 0) return ['decisions: (none)'];\n+  const chunks: string[] = [];\n+  let current = '';\n+  for (const entry of entries) {\n+    const next = current ? `${current} ${entry}` : entry;\n+    if (current && next.length > maxChars - 24) {\n### tests/hook.test.ts\n@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';\n+  decisionLogLines,\n@@ -123,6 +124,19 @@ describe('compactSession', () => {\n+    expect(decisionLogLines(output)).toEqual([`decisions: ${decisionLog(output)}`]);\n+  });\n+\n+  it('splits a long decision log into ui.log lines under the host limit', async () => {\n+    const config = { ...resolveHookConfig({ preserveRecentMessages: 1 }), apiKey: 'k' };\n+    const { result: output } = await compactSession(transcript(), config, jevFetch(() => 0.1));\n+    const lines = decisionLogLines(output, 60);\n+    expect(lines).toEqual([\n+      'decisions (1/2): t1:Read:drop_call/call=0.10/result=0.10',\n+      'decisions (2/2): t2:Bash:drop_call/call=0.10/result=0.10',\n+    ]);\n+    expect(lines.every((line) => line.length <= 60)).toBe(true);"
+    },
+    {
+      "id": "PR-13",
+      "number": 13,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/13",
+      "title": "Merge origin/main (#10) into token-estimate-and-result-head",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T20:17:42+00:00",
+      "files": [
+        ".claude-plugin/plugin.json",
+        "README.md",
+        "hooks/README.md",
+        "hooks/fast-jev.ts",
+        "src/compact.ts",
+        "src/state.ts",
+        "src/types.ts",
+        "tests/fast-jev-compaction.test.ts",
+        "tests/hook.test.ts"
+      ],
+      "changedFiles": 9,
+      "additions": 245,
+      "deletions": 63,
+      "body": "Keep main's truncateHeadChars implementation and note wording; drop the\nduplicate port from this branch and remove charsPerToken from the merged\nresult.\n\nCo-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .claude-plugin/plugin.json\n@@ -46,12 +46,6 @@\n-    \"charsPerToken\": {\n-      \"type\": \"number\",\n-      \"title\": \"Characters per token\",\n-      \"description\": \"Ratio used to estimate token counts from character counts.\",\n-      \"default\": 3.5\n-    },\n### README.md\n@@ -27,7 +27,12 @@ built-in compaction summary with the original messages.\n-   `[… N chars omitted …]` note. If it still does not fit, compaction throws.\n+   `[… N chars omitted …]` note; old tool calls reduced to one line each\n+   (`t12 Read file_path=src/a.ts → ok 480ch`); old call-less messages left\n+   out; runs of old call-only messages folded into one entry. If it still\n+   does not fit, compaction throws. Tokens are estimated without a tokenizer (a\n+   word per six letters, half a token per digit, ~one per other symbol),\n+   calibrated to land a little above the counts Jev reports.\n@@ -101,7 +106,6 @@ put it in a source file.\n-| `charsPerToken` | `3.5` | Characters per token used for the estimates |\n### hooks/README.md\n@@ -16,10 +16,12 @@ and a dropped call disappears with its result.\n-then old messages collapse to a `[… N chars omitted …]` note. Questions are\n-split into as many requests as needed so each request (state plus questions)\n-stays under `maxRequestTokens`; the full state is resent with every request.\n-Token counts are estimated with `charsPerToken`.\n+then old messages collapse to a `[… N chars omitted …]` note, then old tool\n+calls shrink to one line each, then old call-less messages are left out and\n+runs of old call-only messages fold together. Questions are split into as many requests as\n+needed so each request (state plus questions) stays under `maxRequestTokens`;\n+the full state is resent with every request. Token counts are estimated\n+without a tokenizer, calibrated to land a little above what Jev reports.\n@@ -52,7 +54,6 @@ The plugin declares these `userConfig` values in\n-| `charsPerToken` | `3.5` |\n### hooks/fast-jev.ts\n@@ -65,7 +65,6 @@ export function resolveHookConfig(options: PluginOptions): HookConfig {\n-    'charsPerToken',\n@@ -187,7 +186,7 @@ export function summarize(result: CompactResult): string {\n-  }; state ~${stats.stateTokens} tokens in ${stats.requests} request(s)`;\n+  }; state ~${stats.stateTokens} tokens (${stats.stateStage}) in ${stats.requests} request(s)`;\n@@ -272,10 +271,14 @@ export const register: Register = (on: On, options: PluginOptions) => {\n-      return next(event);\n+    } catch (error) {\n+      $.ui.log(\n+        `auto-compact skipped (${error instanceof Error ? error.message : String(error)})`,\n+      );\n+    return next(event);\n### src/compact.ts\n@@ -20,10 +20,12 @@ export const DEFAULT_OPTIONS: ResolvedCompactOptions = {\n-  charsPerToken: 3.5,\n+/** Tokens the request envelope (`model`, key names) adds around state and questions. */\n+const REQUEST_OVERHEAD_TOKENS = 20;\n+\n@@ -43,7 +45,6 @@ export function resolveOptions(options: CompactOptions = {}): ResolvedCompactOpt\n-    charsPerToken: Math.max(0.1, finite(options.charsPerToken, DEFAULT_OPTIONS.charsPerToken)),\n@@ -72,14 +73,14 @@ export function questionsFor(call: ToolCall): JevQuestions {\n-  options: Pick<ResolvedCompactOptions, 'maxRequestTokens' | 'charsPerToken'>,\n+  options: Pick<ResolvedCompactOptions, 'maxRequestTokens'>,\n-  const budget = options.maxRequestTokens - stateTokens;\n+  const budget = options.maxRequestTokens - stateTokens - REQUEST_OVERHEAD_TOKENS;\n-    const tokens = estimateTokens(JSON.stringify(questionsFor(call)), options.charsPerToken);\n… (diff recortado)"
+    },
+    {
+      "id": "PR-14",
+      "number": 14,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/14",
+      "title": "Document installing the plugin in Claude Code",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T20:17:12+00:00",
+      "files": [
+        "README.md"
+      ],
+      "changedFiles": 1,
+      "additions": 31,
+      "deletions": 2,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### README.md\n@@ -123,8 +123,37 @@ stage was needed, and the number of requests.\n-reduction. See [`hooks/README.md`](hooks/README.md) for installation,\n-configuration, and the Claude Code 2.1.274 type reference.\n+reduction. See [`hooks/README.md`](hooks/README.md) for configuration and the\n+Claude Code 2.1.274 type reference.\n+\n+### Install in Claude Code\n+\n+Function hooks are an early-access Claude Code feature (2.1.274+), so the\n+opt-in flag must be set wherever Claude Code runs, e.g. in `~/.claude/settings.json`:\n+\n+```json\n+{ \"env\": { \"CLAUDE_CODE_ENABLE_FUNCTION_HOOKS\": \"1\", \"TYPESAFE_API_KEY\": \"<your key>\" } }\n+```\n+"
+    },
+    {
+      "id": "PR-10",
+      "number": 10,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/10",
+      "title": "Port result-head truncation to the core library",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T08:32:52+00:00",
+      "files": [
+        ".claude-plugin/plugin.json",
+        "README.md",
+        "hooks/README.md",
+        "hooks/fast-jev.ts",
+        "src/compact.ts",
+        "src/types.ts",
+        "tests/fast-jev-compaction.test.ts",
+        "tests/hook.test.ts"
+      ],
+      "changedFiles": 8,
+      "additions": 128,
+      "deletions": 43,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .claude-plugin/plugin.json\n@@ -52,6 +52,12 @@\n+    \"truncateHeadChars\": {\n+      \"type\": \"number\",\n+      \"title\": \"Truncated tool result head\",\n+      \"description\": \"Characters of a tool result kept when Jev decides its full output is no longer needed; 0 keeps only the note.\",\n+      \"default\": 300\n+    },\n### README.md\n@@ -38,9 +38,8 @@ built-in compaction summary with the original messages.\n-   - else `keepCall ≥ threshold` → keep the call, replace the result with a\n-     one-line `[tool result removed during compaction: N chars; re-run the tool\n-     if needed]` note;\n+   - else `keepCall ≥ threshold` → keep the call, truncate the result to its\n+     first `truncateHeadChars` characters plus a one-line note;\n@@ -103,6 +102,7 @@ put it in a source file.\n+| `truncateHeadChars` | `300` | Characters of a dropped tool result retained before its note |\n### hooks/README.md\n@@ -11,8 +11,8 @@ conversation as `state` (tool outputs replaced by a one-line note) and, for\n-becomes a one-line note next to its call, and a dropped call disappears with\n-its result.\n+is truncated to its first `truncateHeadChars` characters plus a one-line note,\n+and a dropped call disappears with its result.\n@@ -53,6 +53,7 @@ The plugin declares these `userConfig` values in\n+| `truncateHeadChars` | `300` |\n### hooks/fast-jev.ts\n@@ -66,6 +66,7 @@ export function resolveHookConfig(options: PluginOptions): HookConfig {\n+    'truncateHeadChars',\n@@ -180,7 +181,7 @@ export function summarize(result: CompactResult): string {\n-    stats.resultsDropped > 0 ? `${stats.resultsDropped} result_dropped` : '',\n+    stats.resultsDropped > 0 ? `${stats.resultsDropped} results truncated` : '',\n### src/compact.ts\n@@ -11,7 +11,6 @@ import type {\n-  ToolResult,\n@@ -22,6 +21,7 @@ export const DEFAULT_OPTIONS: ResolvedCompactOptions = {\n+  truncateHeadChars: 300,\n@@ -44,6 +44,10 @@ export function resolveOptions(options: CompactOptions = {}): ResolvedCompactOpt\n+    truncateHeadChars: Math.max(\n+      0,\n+      Math.floor(finite(options.truncateHeadChars, DEFAULT_OPTIONS.truncateHeadChars)),\n+    ),\n@@ -127,34 +131,17 @@ async function askBatch(\n-function removedNote(chars: number, isError: boolean): string {\n-  return `[tool result removed during compaction: ${chars} chars${\n-    isError ? ', error' : ''\n+function truncatedResultText(text: string, isError: boolean, headChars: number): string {\n+  if (text.length <= headChars + 120) return text;\n### src/types.ts\n@@ -104,6 +104,8 @@ export interface CompactOptions {\n+  /** Characters of a dropped tool result to retain. Default 300. */\n+  truncateHeadChars?: number;\n@@ -113,6 +115,7 @@ export interface ResolvedCompactOptions {\n+  truncateHeadChars: number;\n### tests/fast-jev-compaction.test.ts\n@@ -78,10 +78,16 @@ describe('options', () => {\n+      truncateHeadChars: 300,\n-    expect(resolveOptions({ keepThreshold: Number.NaN, preserveRecentMessages: 2.7 })).toMatchObject({\n+    expect(resolveOptions({\n+      keepThreshold: Number.NaN,\n+      preserveRecentMessages: 2.7,\n… (diff recortado)"
+    },
+    {
+      "id": "PR-11",
+      "number": 11,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/11",
+      "title": "Port the tool-call compaction model into the core library and make the plugin a thin adapter",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T08:26:05+00:00",
+      "files": [
+        ".claude-plugin/marketplace.json",
+        "{plugin/.claude-plugin => .claude-plugin}/plugin.json",
+        "README.md",
+        "demo/JevDemo/main.swift",
+        "examples/demo.ts",
+        "{plugin => hooks}/README.md",
+        "hooks/fast-jev.ts",
+        "{plugin/hooks => hooks}/hooks.json",
+        "package.json",
+        "plugin/hooks/fast-jev.ts",
+        "src/chunk.ts",
+        "src/client.ts",
+        "src/compact.ts",
+        "src/index.ts",
+        "src/messages.ts",
+        "src/request.ts",
+        "src/state.ts",
+        "src/types.ts",
+        "tests/claude-mod.test.ts",
+        "tests/fast-jev-compaction.test.ts",
+        "tests/hook.test.ts",
+        "plugin/tsconfig.json => tsconfig.hooks.json",
+        "{plugin/types => types}/claude-code.d.ts"
+      ],
+      "changedFiles": 23,
+      "additions": 1620,
+      "deletions": 1835,
+      "body": "- src/: structured Message/ToolUse/ToolResult types, tool-call pairing, whole-history state with result bodies omitted, staged fitting to a 25k-token budget, per call/result keep-questions batched across requests, decisions and message reconstruction, request/response helpers\n- Plugin moved to the repo root (.claude-plugin/, hooks/, types/) so the hook may import ../src (Claude Code forbids imports outside the plugin folder); hooks/fast-jev.ts now only adapts Claude Code messages, credentials, logging and fallback\n- Tests, README, examples/demo.ts and the SwiftUI demo updated for the new model; old chunk/kind classifier removed\n\nCo-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .claude-plugin/marketplace.json\n@@ -7,9 +7,9 @@\n-      \"source\": \"./plugin\",\n+      \"source\": \"./\",\n-      \"version\": \"0.1.0\",\n+      \"version\": \"0.3.0\",\n### plugin/.claude-plugin/plugin.json\n@@ -1,6 +1,6 @@\n-  \"version\": \"0.2.0\",\n+  \"version\": \"0.3.0\",\n### README.md\n@@ -6,55 +6,48 @@ Continuous context compaction for LLM agents using TypeSafe's Jev model.\n-it matters later. This library asks Jev two narrow questions for each chunk:\n+it matters later. This library never rewrites anything. It only deletes tool\n+calls and tool results Jev says are no longer needed, and it asks Jev while\n+showing it the whole conversation. User and assistant text stays verbatim and\n+in order.\n-1. Can this chunk be removed without losing information needed to continue?\n-2. What kind of information is it?\n-\n-Your code then deletes only chunks Jev says are safe to drop. Kept chunks remain\n-verbatim and in their original order. The design is intended for continuous\n-compaction on every agent turn, with a target of roughly 150 ms for a small\n-request (actual latency depends on network and API load).\n+The repository is both an npm package (`src/`) and a Claude Code plugin\n+(`hooks/`, `.claude-plugin/`) that uses the package to replace Claude Code's\n### demo/JevDemo/main.swift\n@@ -15,56 +15,99 @@ enum Verdict: Equatable {\n+/// Jev's two answers about one tool call: keep the call, keep its full result.\n+struct CallScore: Equatable {\n+    let call: Double\n+    let result: Double\n+}\n+\n-    let kind: String\n-    let drop: Double\n+    /// The tool call this line belongs to (header and its result lines share it); nil for text.\n+    let callId: String?\n+    let score: CallScore?\n+    var isText: Bool { role == .user || role == .assistant }\n+\n+    /// keepResult ≥ 0.5 → keep call and result; else keepCall ≥ 0.5 → keep the call,\n### examples/demo.ts\n@@ -1,49 +1,66 @@\n-import { compactMessages, type Message } from '../src/index.js';\n+import { compactMessages, reductionRatio, type Message } from '../src/index.js';\n+\n+let n = 0;\n+function call(tool: string, input: Record<string, unknown>, output: string, isError = false): Message[] {\n+  const tool_use_id = `toolu_${++n}`;\n+  return [\n+    { role: 'assistant', text: '', toolUses: [{ tool_use_id, tool, input, text: output, isError }] },\n+    { role: 'user', text: '', toolUses: [], toolResults: [{ tool_use_id, text: output, isError }] },\n+  ];\n+}\n+function user(text: string): Message {\n+  return { role: 'user', text, toolUses: [] };\n+}\n### plugin/README.md\n@@ -2,7 +2,11 @@\n… (diff recortado)"
+    },
+    {
+      "id": "PR-9",
+      "number": 9,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/9",
+      "title": "Ask Jev per tool call and tool result against the whole stripped history",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T07:50:59+00:00",
+      "files": [
+        "plugin/.claude-plugin/plugin.json",
+        "plugin/README.md",
+        "plugin/hooks/fast-jev.ts",
+        "tests/claude-mod.test.ts"
+      ],
+      "changedFiles": 4,
+      "additions": 805,
+      "deletions": 561,
+      "body": "State sent to Jev is now the entire conversation with tool outputs replaced\nby a one-line note, fitted into a 25k-token budget in stages (tool inputs\ntruncated, long texts abridged oldest-first, old messages collapsed). For\nevery unpinned tool call two noul questions are asked (keep the call, keep\nits full output); questions are batched across requests that each resend the\nfull state and stay under 30k estimated tokens. User/assistant text is never\ndropped. Removes the unit grouping, kind classifier and drop/protect model.\n\nCo-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### plugin/.claude-plugin/plugin.json\n@@ -1,6 +1,6 @@\n-  \"version\": \"0.1.0\",\n+  \"version\": \"0.2.0\",\n@@ -10,22 +10,10 @@\n-    \"dropThreshold\": {\n+    \"keepThreshold\": {\n-      \"title\": \"Drop threshold\",\n-      \"description\": \"Minimum Jev removal probability.\",\n-      \"default\": 0.8\n-    },\n-    \"toolOutputDropThreshold\": {\n-      \"type\": \"number\",\n-      \"title\": \"Tool output drop threshold\",\n-      \"description\": \"Minimum Jev removal probability for units that contain tool results (file reads, command output).\",\n-      \"default\": 0.5\n### plugin/README.md\n@@ -1,10 +1,21 @@\n-original messages that Jev judged safe to retain. The first message and the\n-newest configured messages are pinned. User instructions and pending tasks are\n-protected when Jev classifies them with sufficient confidence. Tool-call\n-messages are evaluated together with their following tool results.\n+original messages, minus the tool calls and tool results Jev judged no longer\n+needed. User and assistant text is never touched. Jev is sent the whole\n+conversation as `state` (tool outputs replaced by a one-line note) and, for\n+every tool call outside the pinned first and newest messages, two questions:\n+whether the call should stay and whether its full output should stay. An\n+item is kept when Jev's probability reaches `keepThreshold`; a dropped result\n+becomes a one-line note next to its call, and a dropped call disappears with\n+its result.\n+\n+The state is fitted into `maxStateTokens` in stages: tool inputs are\n### plugin/hooks/fast-jev.ts\n@@ -8,45 +8,26 @@ import type {\n-type Kind =\n-  | 'user_instruction'\n-  | 'decision'\n-  | 'file_reference'\n-  | 'error'\n-  | 'pending_task'\n-  | 'stale_tool_output'\n-  | 'chatter'\n-  | 'other';\n-\n-const KIND_CRITERIA: Record<Kind, string> = {\n-  user_instruction:\n-    'An instruction, constraint, preference, or request from the user',\n-  decision: 'A design/implementation decision or key finding',\n### tests/claude-mod.test.ts\n@@ -1,10 +1,13 @@\n+  applyDecisions,\n+  batchCalls,\n+  collectToolCalls,\n-  decideUnit,\n-  groupMessages,\n-  packWindows,\n-  type CompactionUnit,\n+  compactWithFetch,\n+  decideCall,\n+  fitState,\n… (diff recortado)"
+    },
+    {
+      "id": "PR-6",
+      "number": 6,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/6",
+      "title": "Make Jev compaction visible and effective on real tool output",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T07:07:37+00:00",
+      "files": [
+        "plugin/.claude-plugin/plugin.json",
+        "plugin/hooks/fast-jev.ts"
+      ],
+      "changedFiles": 2,
+      "additions": 90,
+      "deletions": 16,
+      "body": "- Include tool_result text and char counts in unit previews\n- Sharpen drop question and stale_tool_output/file_reference criteria\n- Add toolOutputDropThreshold (default 0.5) for units with tool results\n- Fall back to TYPESAFE_API_KEY in settings.json env\n- Toast + log the outcome, with per-unit decision log for diagnosis\n\nCo-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### plugin/.claude-plugin/plugin.json\n@@ -16,6 +16,12 @@\n+    \"toolOutputDropThreshold\": {\n+      \"type\": \"number\",\n+      \"title\": \"Tool output drop threshold\",\n+      \"description\": \"Minimum Jev removal probability for units that contain tool results (file reads, command output).\",\n+      \"default\": 0.5\n+    },\n### plugin/hooks/fast-jev.ts\n@@ -23,16 +23,18 @@ const KIND_CRITERIA: Record<Kind, string> = {\n-    'Names a file path, symbol, command, URL or identifier that will be needed',\n+    'A short mention of a file path, symbol, command, URL or identifier that will be needed (not the file contents themselves)',\n-  stale_tool_output: 'Tool/file/log output that has already been acted on',\n+  stale_tool_output:\n+    'The result of a tool call (file contents, directory listing, command or test output, search results) that the assistant already used; it can be re-read…\n+  toolOutputDropThreshold: 0.5,\n@@ -66,6 +68,7 @@ export type CompactionUnit = {\n+  toolOutput: boolean;\n@@ -86,6 +89,7 @@ export type UnitDecision = {\n+  toolOutputDropThreshold?: number;\n@@ -100,6 +104,7 @@ export type ModConfig = {\n+  toolOutputDropThreshold: number;\n@@ -158,6 +163,11 @@ function resolveConfig(options: PluginOptions | ModConfig): ResolvedConfig {\n+    toolOutputDropThreshold: optionNumber("
+    },
+    {
+      "id": "PR-4",
+      "number": 4,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/4",
+      "title": "Add native macOS animated compaction demo (demo/JevDemo)",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T06:43:56+00:00",
+      "files": [
+        ".gitignore",
+        "README.md",
+        "demo/JevDemo/Info.plist",
+        "demo/JevDemo/build.sh",
+        "demo/JevDemo/main.swift"
+      ],
+      "changedFiles": 5,
+      "additions": 598,
+      "deletions": 0,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .gitignore\n@@ -1,3 +1,4 @@\n+demo/JevDemo/build\n### README.md\n@@ -149,3 +149,17 @@ TYPESAFE_API_KEY=\"$(cat ~/.typesafe_key)\" npm run demo\n+\n+## Animated demo (macOS)\n+\n+`demo/JevDemo` is a small native SwiftUI app that plays a scripted, dramatized\n+version of the compaction flow inside a Claude Code-style terminal: transcript\n+chunks are scanned, marked green (keep) or red (drop), and the red ones\n+collapse away. It uses a canned transcript and never calls the API; it exists\n+to be screen recorded.\n+\n+```sh\n+demo/JevDemo/build.sh   # builds demo/JevDemo/build/JevDemo.app and launches it\n+```\n+\n+Press space in the app to replay from the start.\n### demo/JevDemo/Info.plist\n@@ -0,0 +1,16 @@\n+<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n+<plist version=\"1.0\">\n+<dict>\n+  <key>CFBundleName</key><string>JevDemo</string>\n+  <key>CFBundleDisplayName</key><string>Jev Compaction Demo</string>\n+  <key>CFBundleIdentifier</key><string>ai.typesafe.fast-jev-compaction.demo</string>\n+  <key>CFBundleExecutable</key><string>JevDemo</string>\n+  <key>CFBundlePackageType</key><string>APPL</string>\n+  <key>CFBundleShortVersionString</key><string>0.1.0</string>\n+  <key>CFBundleVersion</key><string>1</string>\n+  <key>LSMinimumSystemVersion</key><string>14.0</string>\n+  <key>NSHighResolutionCapable</key><true/>\n+  <key>NSPrincipalClass</key><string>NSApplication</string>\n### demo/JevDemo/build.sh\n@@ -0,0 +1,20 @@\n+#!/usr/bin/env bash\n+# Builds demo/JevDemo/main.swift into demo/JevDemo/build/JevDemo.app and launches it.\n+# A native macOS animation of fast-jev-compaction inside a Claude Code-style\n+# terminal, meant to be screen recorded. Press space in the app to replay.\n+set -euo pipefail\n+\n+cd \"$(dirname \"$0\")\"\n+app=build/JevDemo.app\n+rm -rf \"$app\"\n+mkdir -p \"$app/Contents/MacOS\" \"$app/Contents/Resources\"\n+cp Info.plist \"$app/Contents/\"\n+swiftc -O -parse-as-library \\\n+  -target \"$(uname -m)-apple-macos14.0\" \\\n+  -framework AppKit -framework SwiftUI \\\n### demo/JevDemo/main.swift\n@@ -0,0 +1,547 @@\n+import AppKit\n+import SwiftUI\n+\n+// MARK: - Model\n+\n+enum Role { case user, assistant, toolHeader, toolLine }\n+\n… (diff recortado)"
+    },
+    {
+      "id": "PR-3",
+      "number": 3,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/3",
+      "title": "Fix mod API key fallback and doubled log prefix",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T06:36:45+00:00",
+      "files": [
+        "plugin/hooks/fast-jev.ts"
+      ],
+      "changedFiles": 1,
+      "additions": 4,
+      "deletions": 4,
+      "body": "An unset apiKey plugin setting arrives as an empty string, so `??` never\nfell back to TYPESAFE_API_KEY and every compaction fell back to Claude\nCode's summary. Claude Code already prefixes $.ui.log lines with the\nplugin name, so drop the mod's own prefix.\n\nCo-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>",
+      "diffSummary": "### plugin/hooks/fast-jev.ts\n@@ -535,7 +535,7 @@ export async function compactOrFallback(\n-    apiKey: typeof options.apiKey === 'string' ? options.apiKey : undefined,\n+    apiKey: typeof options.apiKey === 'string' && options.apiKey.length > 0 ? options.apiKey : undefined,\n@@ -571,7 +571,7 @@ async function getApiKey(\n-  return config.apiKey ?? (await $.env.get('TYPESAFE_API_KEY'));\n+  return config.apiKey || (await $.env.get('TYPESAFE_API_KEY'));\n@@ -595,14 +595,14 @@ export const register: Register = (on: On, options: PluginOptions) => {\n-          'fast-jev-compaction: fallback (reduction below minimum)',\n+          'fallback (reduction below minimum)',\n-        `fast-jev-compaction: fallback (${error instanceof Error ? error.message : String(error)})`,\n+        `fallback (${error instanceof Error ? error.message : String(error)})`,"
+    },
+    {
+      "id": "PR-2",
+      "number": 2,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/2",
+      "title": "Use placeholder key in plugin README",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T06:21:00+00:00",
+      "files": [
+        ".claude-plugin/marketplace.json",
+        "README.md",
+        "package.json",
+        "plugin/.claude-plugin/plugin.json",
+        "plugin/README.md",
+        "plugin/hooks/fast-jev.ts",
+        "plugin/hooks/hooks.json",
+        "plugin/tsconfig.json",
+        "plugin/types/claude-code.d.ts",
+        "tests/claude-mod.test.ts"
+      ],
+      "changedFiles": 10,
+      "additions": 12216,
+      "deletions": 1,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .claude-plugin/marketplace.json\n@@ -0,0 +1,16 @@\n+{\n+  \"name\": \"fast-jev-compaction\",\n+  \"owner\": {\n+    \"name\": \"tamaratran\",\n+    \"url\": \"https://github.com/tamaratran\"\n+  },\n+  \"plugins\": [\n+    {\n+      \"name\": \"fast-jev-compaction\",\n+      \"source\": \"./plugin\",\n+      \"description\": \"Verbatim Jev-guided compaction for Claude Code sessions.\",\n+      \"version\": \"0.1.0\",\n+      \"license\": \"MIT\"\n+    }\n### README.md\n@@ -119,6 +119,14 @@ same environment variable. Never commit the key or put it in a source file.\n+## Claude Code mod\n+\n+The repository includes an early-access Claude Code function-hook plugin under\n+[`plugin/`](plugin/). It can return Jev-selected original messages from\n+`session.compact` and falls back to Claude Code's built-in summary on errors or\n+insufficient reduction. See [`plugin/README.md`](plugin/README.md) for\n+installation, configuration, and the Claude Code 2.1.274 type reference.\n+\n### package.json\n@@ -20,7 +20,8 @@\n-    \"typecheck\": \"tsc --noEmit\",\n+    \"typecheck\": \"tsc --noEmit && npm run typecheck:plugin\",\n+    \"typecheck:plugin\": \"tsc -p plugin --noEmit\",\n### plugin/.claude-plugin/plugin.json\n@@ -0,0 +1,62 @@\n+{\n+  \"name\": \"fast-jev-compaction\",\n+  \"version\": \"0.1.0\",\n+  \"description\": \"Verbatim Jev-guided compaction for Claude Code sessions.\",\n+  \"license\": \"MIT\",\n+  \"userConfig\": {\n+    \"apiKey\": {\n+      \"type\": \"string\",\n+      \"title\": \"TypeSafe API key\",\n+      \"description\": \"TypeSafe API key. Leave unset to use TYPESAFE_API_KEY.\",\n+      \"sensitive\": true\n+    },\n+    \"dropThreshold\": {\n+      \"type\": \"number\",\n### plugin/README.md\n@@ -0,0 +1,65 @@\n+# fast-jev-compaction Claude Code mod\n+\n+This plugin uses Claude Code function hooks to replace a compaction with the\n+original messages that Jev judged safe to retain. The first message and the\n+newest configured messages are pinned. User instructions and pending tasks are\n+protected when Jev classifies them with sufficient confidence. Tool-call\n+messages are evaluated together with their following tool results.\n+\n+The mod is an early-access Claude Code function-hook module. The checked-in\n+type reference was generated by Claude Code **2.1.274**. Enable the function\n+hooks surface before installing or loading it:\n… (diff recortado)"
+    },
+    {
+      "id": "PR-1",
+      "number": 1,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/pull/1",
+      "title": "Build answer record once",
+      "author": "tamara tran",
+      "mergedAt": "2026-09-17T06:00:03+00:00",
+      "files": [
+        ".gitignore",
+        "LICENSE",
+        "README.md",
+        "examples/demo.ts",
+        "package-lock.json",
+        "package.json",
+        "src/chunk.ts",
+        "src/client.ts",
+        "src/compact.ts",
+        "src/index.ts",
+        "src/messages.ts",
+        "src/types.ts",
+        "tests/fast-jev-compaction.test.ts",
+        "tsconfig.json"
+      ],
+      "changedFiles": 14,
+      "additions": 2989,
+      "deletions": 1,
+      "body": "Co-Authored-By: tranjtamara <amtamtam@gmail.com>",
+      "diffSummary": "### .gitignore\n@@ -0,0 +1,3 @@\n+node_modules\n+dist\n+.env\n### LICENSE\n@@ -0,0 +1,21 @@\n+MIT License\n+\n+Copyright (c) 2025\n+\n+Permission is hereby granted, free of charge, to any person obtaining a copy\n+of this software and associated documentation files (the \"Software\"), to deal\n+in the Software without restriction, including without limitation the rights\n+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n+copies of the Software, and to permit persons to whom the Software is\n+furnished to do so, subject to the following conditions:\n+\n+The above copyright notice and this permission notice shall be included in all\n+copies or substantial portions of the Software.\n+\n### README.md\n@@ -1,3 +1,143 @@\n-Continuous context compaction for LLM agents using TypeSafe Jev: per-chunk typed keep/drop decisions instead of lossy summarization.\n+Continuous context compaction for LLM agents using TypeSafe's Jev model.\n+\n+## What and why\n+\n+Most context compaction asks an LLM to summarize old turns. A summary is\n+lossy: a file path, exact error, constraint, or command can disappear even when\n+it matters later. This library asks Jev two narrow questions for each chunk:\n+\n+1. Can this chunk be removed without losing information needed to continue?\n+2. What kind of information is it?\n+\n+Your code then deletes only chunks Jev says are safe to drop. Kept chunks remain\n+verbatim and in their original order. The design is intended for continuous\n### examples/demo.ts\n@@ -0,0 +1,49 @@\n+import { compactMessages, type Message } from '../src/index.js';\n+\n+const messages: Message[] = [\n+  { role: 'system', content: 'You are a careful coding agent. Work in the repository and explain changes.' },\n+  { role: 'user', content: 'Fix the failing parser test in the checkout service.' },\n+  { role: 'assistant', content: 'I will inspect the test and the parser implementation first.' },\n+  { role: 'tool', content: 'src/parser.ts\\nsrc/parser.test.ts\\nsrc/legacy/parser.ts\\npackage.json' },\n+  { role: 'assistant', content: 'The failure is in parser.test.ts, and the legacy parser is unrelated.' },\n+  { role: 'tool', content: 'FAIL src/parser.test.ts\\n  parser > accepts a trailing comma\\n    Expected: true\\n    Received: false' },\n+  { role: 'tool', content: 'Error: expected true to be true\\n    at src/parser.test.ts:42:11\\n    at processTicksAndRejections (node:internal/process/task_q…\n+  { role: 'user', content: 'Do not touch legacy/. Keep the public parser API backward compatible.' },\n+  { role: 'assistant', content: 'I will limit the change to the public parser and its focused test.' },\n+  { role: 'tool', content: 'git status --short\\n M src/parser.ts' },\n+  { role: 'assistant', content: 'The parser rejects a comma before the closing brace because the token loop stops too early.' },\n### package-lock.json\n@@ -0,0 +1,1980 @@\n+{\n+  \"name\": \"fast-jev-compaction\",\n+  \"version\": \"0.1.0\",\n+  \"lockfileVersion\": 3,\n+  \"requires\": true,\n… (diff recortado)"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+Summary,Description,Issue Type,Labels
+El checkout falla con tarjetas Amex en producción,Desde ayer los clientes con American Express ven un error 500 al confirmar el pago. Visa y Mastercard funcionan normal. Afecta a todos los usuarios con Amex.,Task,batch
+Agregar pago con OXXO Pay,"Varios clientes piden pagar en efectivo. Integrar OXXO Pay como método de pago en el checkout, con referencia de pago y expiración a 48 horas.",Task,batch
+Reembolso parcial se registra como total,"Al hacer un reembolso parcial de $200 sobre un pedido de $850, el sistema marca el pedido como reembolsado completo y el reporte de ventas lo descuenta entero.",Task,batch
+Migrar el servicio de notificaciones a la nueva cola,El servicio de notificaciones sigue usando Redis pub/sub. Migrarlo a la cola SQS como el resto de los servicios para unificar reintentos y monitoreo.,Task,batch
+Login con Google deja de funcionar en Safari,En Safari (iOS y Mac) el botón de 'Continuar con Google' abre el popup y después regresa a la pantalla de login sin iniciar sesión. En Chrome funciona.,Task,batch
+¿Cómo exporto mi catálogo a Excel?,Un vendedor pregunta dónde está la opción para descargar su catálogo completo de productos en Excel. No encuentra el botón.,Task,batch
+Carrusel de la home se encima con el menú en móvil,En pantallas menores a 375 px el carrusel principal se superpone al menú hamburguesa. Se reproduce en iPhone SE.,Task,batch
+Reporte de ventas semanal tarda más de 2 minutos,El reporte de ventas de la semana tarda entre 2 y 4 minutos en generarse para tiendas con más de 10 mil pedidos. Antes tardaba 20 segundos.,Task,batch
+Modo oscuro en la app,Solicitud recurrente de usuarios: agregar modo oscuro a la app web y móvil respetando la preferencia del sistema.,Task,batch
+Actualizar dependencias con vulnerabilidades críticas,npm audit reporta 3 vulnerabilidades críticas en lodash y axios. Actualizar y correr la suite completa de pruebas.,Task,batch
+Cupón de descuento se aplica dos veces,"Si el cliente aplica el cupón, regresa al carrito y vuelve a aplicarlo, el descuento se suma dos veces. Ya hubo 14 pedidos con descuento duplicado esta semana.",Task,batch
+Dashboard de métricas para vendedores,"Los vendedores quieren ver ventas del mes, productos más vendidos y tasa de conversión en una pantalla. Hoy tienen que pedir el reporte por correo.",Task,batch
+No me llega el correo de confirmación,Cliente dice que compró ayer y no recibió el correo de confirmación. Revisé y el pedido existe y el correo salió. Probablemente está en spam.,Task,batch
+Refactorizar el módulo de envíos,"El módulo de cálculo de envíos tiene 1,200 líneas en un solo archivo y lógica duplicada para Estafeta, DHL y FedEx. Separar por paquetería y agregar pruebas.",Task,batch
+Imágenes de producto se ven pixeleadas en pantallas retina,Las miniaturas del catálogo se cargan a 200 px y se escalan a 400 px en pantallas retina. Servir la versión 2x.,Task,batch
+Pedidos duplicados cuando el cliente da doble clic en Pagar,"Si el cliente hace doble clic rápido en el botón de pagar, se crean dos pedidos y se cobra dos veces. Reproducido 3 veces en staging.",Task,batch
+Facturación automática con CFDI 4.0,"Generar la factura CFDI 4.0 automáticamente cuando el cliente captura su RFC en el checkout, usando el PAC que ya tenemos contratado.",Task,batch
+¿Puedo cambiar el dominio de mi tienda?,Vendedor pregunta si puede conectar su propio dominio .com.mx a su tienda y cómo configurarlo.,Task,batch
+Búsqueda no encuentra productos con acentos,Buscar 'jabón' no devuelve resultados pero 'jabon' sí. La búsqueda no normaliza acentos ni ñ.,Task,batch
+Agregar pruebas end-to-end al flujo de checkout,"El checkout no tiene pruebas automatizadas de extremo a extremo. Cubrir el flujo completo con Playwright: carrito, dirección, pago, confirmación.",Task,batch
+Botón de WhatsApp en la página de producto,Permitir que el vendedor active un botón de 'Preguntar por WhatsApp' en cada producto con mensaje prellenado.,Task,batch
+Exportación de pedidos a CSV sale con columnas vacías,"Al exportar pedidos del último mes, las columnas 'Método de pago' y 'Paquetería' salen vacías en todas las filas. En la base de datos sí tienen valor.",Task,batch
+Sesión expira cada 15 minutos aunque esté activo,Vendedores reportan que la sesión del panel se cierra cada 15 minutos aunque estén trabajando. Parece que el token no se renueva.,Task,batch
+Página de rastreo de envío,Página pública donde el cliente pega su número de guía y ve el estado del envío sin iniciar sesión.,Task,batch
+Mover los logs de pagos a retención de 7 años,"Por requisito fiscal, los logs de transacciones deben guardarse 7 años. Hoy se borran a los 90 días. Configurar bucket con retención y lifecycle.",Task,batch
+Las notificaciones push llegan con 20 minutos de retraso,Las notificaciones de 'tu pedido fue enviado' llegan entre 15 y 25 minutos después del evento. Debería ser inmediato.,Task,batch
+Métricas de abandono de carrito,"Agregar al reporte de ventas la tasa de abandono de carrito por día y el paso donde abandonan (carrito, dirección, pago).",Task,batch
+No funciona,,Task,batch
+Cambiar el color del botón de pagar y arreglar el cobro doble,"El botón debería ser verde en vez de azul. También a veces cobra dos veces, no sé cuándo.",Task,batch
+¿Esto es normal?,Adjunto captura. (sin texto adicional),Task,batch

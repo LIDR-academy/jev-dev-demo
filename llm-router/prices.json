@@ -1,0 +1,6 @@
+{
+  "_nota": "USD por millón de tokens. Actualiza la víspera desde las páginas de precios de Anthropic y TypeSafe.",
+  "claude-sonnet-4-5": { "input_per_m": 3.00, "output_per_m": 15.00 },
+  "claude-haiku-4-5":  { "input_per_m": 1.00, "output_per_m": 5.00 },
+  "jev-1.13.0":        { "input_per_m": 0.10, "output_per_m": 0.00 }
+}

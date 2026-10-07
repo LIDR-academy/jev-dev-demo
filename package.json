@@ -1,0 +1,21 @@
+{
+  "name": "jev-dev-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo: Jev decide, el LLM razona. Triage de Jira + router de LLM para ahorrar tokens. Sin dependencias: Node 22+.",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "server": "node --env-file-if-exists=.env jira-triage/server.ts",
+    "batch": "node --env-file-if-exists=.env jira-triage/batch.ts",
+    "review": "node --env-file-if-exists=.env llm-router/review.ts",
+    "compare": "node llm-router/compare.ts",
+    "show-review": "node llm-router/show-review.ts",
+    "reset": "node --env-file-if-exists=.env scripts/reset.ts",
+    "import-prs": "node llm-router/import-prs.mjs",
+    "test": "node --test tests/*.test.ts",
+    "seed": "node --env-file-if-exists=.env scripts/seed.ts"
+  }
+}
