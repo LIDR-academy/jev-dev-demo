@@ -39,7 +39,10 @@ npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock &&
 | `scripts/reset.ts` | Borra los issues de la demo y `results/` para repetirla. |
 | `data/tickets.json` | 30 tickets de una tienda en línea mexicana; 27 claros + 3 ambiguos (T28–T30), con `expected`. |
 | `data/tickets-jira-import.csv` | Los mismos 30 para importar a Jira de golpe. |
-| `data/prs-real.json` | **20 PRs reales de [medusajs/medusa](https://github.com/medusajs/medusa)** (e-commerce TS): 5 docs, 3 bumps, 2 chores grandes, 8 fixes, 2 features de pagos. Esta va a la demo. |
+| `data/prs-real.json` | **20 PRs reales de [medusajs/medusa](https://github.com/medusajs/medusa)** (e-commerce TS): 5 docs, 3 bumps, 2 chores grandes, 8 fixes, 2 features de pagos. Con `sha` y `parentSha` para recrearlas. |
+| `data/prs-fork.json` | (lo generas tú) Las mismas 20, **abiertas en tu fork** con `scripts/open-prs.mjs`. Esta es la que va a la demo: las PRs viven en GitHub y el router comenta en ellas. |
+| `scripts/open-prs.mjs` | Recrea las PRs reales como PRs abiertas en tu fork (cherry-pick de cada commit original). `--dry-run` y `--cleanup`. |
+| `shared/github.ts` | Comentario del router en la PR (`review --comment`). |
 | `data/prs-fast-jev-compaction.json` | 12 PRs reales de [tamaratran/fast-jev-compaction](https://github.com/tamaratran/fast-jev-compaction), un plugin de Claude Code que usa Jev. Opción "meta"; pocas y de un solo autor. |
 | `data/prs.json` | 20 PRs sintéticas de respaldo si falla la red. |
 | `tests/` | Pruebas de umbrales (`node --test`). |
@@ -89,7 +92,22 @@ npm run import-prs -- --source=git --path=../medusa --count=20 --max-docs=5 --ou
 npm run import-prs -- --repo=TU-ORG/TU-REPO --count=20 --max-docs=4
 ```
 
-Si quieres el acto 2 **en vivo** (abrir una PR y que el router la comente solo), haz un fork de Medusa a tu cuenta, agrega un webhook `pull_request` apuntando a `https://TU-TUNEL/webhook/github` y pon `GITHUB_TOKEN` en `.env`.
+### 4b. Dónde viven las PRs: en tu fork, abiertas
+
+El JSON es una foto. Para que las PRs existan de verdad en GitHub durante la demo:
+
+```bash
+gh repo fork medusajs/medusa --clone=false
+node scripts/open-prs.mjs --fork=TU-USUARIO/medusa --dry-run     # prepara en local, no envía nada
+node scripts/open-prs.mjs --fork=TU-USUARIO/medusa               # push + 20 PRs abiertas con etiqueta jev-demo
+npm run import-prs -- --repo=TU-USUARIO/medusa --state=open --count=20 --out=data/prs-fork.json
+npm run review -- --mode=jev --data=data/prs-fork.json --comment  # el router comenta en cada PR (GITHUB_TOKEN)
+node scripts/open-prs.mjs --fork=TU-USUARIO/medusa --cleanup     # al terminar: cierra PRs y borra ramas
+```
+
+Cada PR recreada apunta a `demo-base` (el padre del commit más antiguo) y contiene exactamente el commit original; las que no aplican limpias usan su propio padre como base. Ninguna apunta al repo de Medusa, solo a tu fork.
+
+Si además quieres **abrir una PR en vivo** y que el router la comente al instante, agrega un webhook `pull_request` en el fork apuntando a `https://TU-TUNEL/webhook/github`.
 
 ### 5. Ensayo
 
@@ -116,9 +134,9 @@ Cronométralo dos veces, una con hotspot del celular. Graba ambos actos como res
 | 6 | Abrir el ticket | Comentario de Jev con las tres decisiones y su % |
 | 8 | `npm run batch -- --no-create` | 30 líneas en ~3 s, tabla, costo < 1 centavo |
 | 10 | Filtro `labels = revisar` | Los 3 ambiguos escalados |
-| 12 | `cat results/direct.json` o la tabla ya corrida | Todo a Sonnet: tantos tokens, tanto costo |
+| 12 | Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya corrido | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
 | 14 | VS Code: `llm-router/router.ts` | Una pregunta, tres caminos |
-| 16 | `npm run review -- --mode=jev` | Cada PR con ruta y confianza, en vivo |
+| 16 | `npm run review -- --mode=jev --data=data/prs-fork.json --comment` | Terminal: cada PR con ruta y confianza. Navegador: los comentarios aparecen en las PRs del fork |
 | 19 | `npm run compare` | Tabla lado a lado. Silencio. Luego el número |
 | 21 | `npm run show-review -- PR-17099` | La PR de pagos recibió la misma revisión en ambos modos |
 | 24 | `npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json` | Cierre meta: un plugin de Claude Code que usa Jev para compactar contexto, revisado por un router que usa Jev |

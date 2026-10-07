@@ -96,7 +96,7 @@ Después corre `npm run batch -- --no-create` y confirma que los 30 quedan clasi
 ```markdown
 Actualiza llm-router/prices.json con los precios vigentes por millón de tokens de claude-sonnet-4-5, claude-haiku-4-5 (página de precios de Anthropic) y de Jev (página de precios de TypeSafe AI). Cita las URLs en el campo _nota.
 Verifica que data/prs-real.json tiene 20 PRs de medusajs/medusa. Si quieres refrescarlas, corre `npm run import-prs -- --repo=medusajs/medusa --count=20 --max-docs=5 --out=data/prs-real.json` (usa gh).
-Corre `npm run review -- --mode=direct` (sin mock, tarda 1–2 min y gasta unos centavos) y luego `npm run review -- --mode=jev --concurrency=3`. Corre `npm run compare` y `npm run show-review -- PR-17099`.
+Corre `npm run review -- --mode=direct` (sin mock, tarda 1–2 min y gasta unos centavos) y luego `npm run review -- --mode=jev --concurrency=3`. Corre `npm run compare` y `npm run show-review -- PR-17099`. (Esto es con el JSON; en el paso 7 lo repetimos contra las PRs abiertas del fork.)
 Dime: el porcentaje de ahorro, cuántas PRs fueron a rules/haiku/sonnet, y si alguna PR fue escalada por touches_money. Copia results/ a results-backup/ (esa carpeta sí se puede commitear) por si el día de la demo falla la red.
 ```
 
@@ -104,18 +104,39 @@ Dime: el porcentaje de ahorro, cuántas PRs fueron a rules/haiku/sonnet, y si al
 
 ---
 
-## Paso 7 — Fork de Medusa y webhook de GitHub (opcional, acto 2 en vivo)
+## Paso 7 — Fork de Medusa con las 20 PRs ABIERTAS (recomendado)
+
+Aquí es donde las PRs dejan de vivir en un JSON y pasan a vivir en GitHub. El script recrea las 20 PRs reales como PRs abiertas en tu fork, cada una con su commit original.
 
 ```markdown
-Haz un fork de medusajs/medusa a mi cuenta con `gh repo fork medusajs/medusa --clone=false`. No lo clones: pesa mucho.
-Pídeme que pegue GITHUB_TOKEN en .env (un token clásico con permiso repo, o fine-grained con Pull requests: read/write sobre el fork).
-Crea un webhook en el fork con gh api POST /repos/<mi-usuario>/medusa/hooks, content_type json, evento pull_request, URL <túnel>/webhook/github.
-Para probarlo sin clonar el repo completo: usa la API de contenidos de GitHub para crear una rama demo/jev-test desde develop, modificar README.md agregando una línea, y abrir una PR hacia develop del fork (NO hacia medusajs/medusa). Espera 5 segundos y muéstrame el log del servidor y el comentario que el router dejó en la PR. Cierra la PR al terminar.
+Haz un fork de medusajs/medusa a mi cuenta con `gh repo fork medusajs/medusa --clone=false` y dime el nombre completo (usuario/medusa).
+Corre primero en seco: `node scripts/open-prs.mjs --fork=<usuario>/medusa --dry-run`. Clona el fork con historia (depth 400) en ../medusa-fork, crea la rama demo-base y prepara 20 ramas demo/pr-N con cherry-pick del commit original; para las que choquen usa su propio padre como base. Muéstrame el resumen: cuántas por cherry-pick y cuántas con base propia.
+Si todo está bien, corre sin --dry-run. Hace push de las ramas y abre las 20 PRs en el fork con la etiqueta jev-demo. Dame el enlace a la lista de PRs abiertas.
+Luego genera el JSON de esas PRs abiertas: `npm run import-prs -- --repo=<usuario>/medusa --state=open --count=20 --out=data/prs-fork.json` y confirma que las 20 traen url del fork, archivos y diff.
 ```
 
-**Debe salir:** una PR en tu fork con un comentario del router: complejidad, confianza, dinero y ruta. Si no quieres este paso, sáltalo; el acto 2 con `npm run review` ya es real.
+**Debe salir:** 20 PRs abiertas en `https://github.com/<usuario>/medusa/pulls?q=is:open+label:jev-demo` y `data/prs-fork.json` apuntando a ellas. Si Claude Code reporta que algún commit no está en el clon, pídele que sincronice el fork con upstream (`gh repo sync <usuario>/medusa`) y repita.
 
----
+## Paso 7b — Que el router comente en las PRs
+
+```markdown
+Pídeme que pegue GITHUB_TOKEN en .env (token con permiso de escritura en pull requests del fork).
+Corre `npm run review -- --mode=direct --data=data/prs-fork.json` (precalcula, no es en vivo) y luego `npm run review -- --mode=jev --data=data/prs-fork.json --comment --concurrency=3`. Con --comment, cada PR del fork recibe un comentario con complejidad, confianza, dinero, ruta y la revisión plegada.
+Abre dos PRs en el navegador, una trivial y una de pagos (#17099 "Support multiple payment accounts"), y confirma que el comentario está. Corre `npm run compare` y `npm run show-review -- PR-<número del fork de 17099>`.
+```
+
+**Debe salir:** los comentarios del router visibles en las PRs del fork. En la demo, minuto 16: corres `review --mode=jev --comment` con la lista de PRs abierta en el navegador y los comentarios van apareciendo mientras la terminal imprime las rutas.
+
+Para dejar el fork limpio después: `node scripts/open-prs.mjs --fork=<usuario>/medusa --cleanup` cierra las PRs y borra las ramas.
+
+## Paso 7c — Webhook de GitHub para abrir una PR en vivo (opcional)
+
+```markdown
+Crea un webhook en el fork con gh api POST /repos/<usuario>/medusa/hooks (content_type json, evento pull_request, URL <túnel>/webhook/github).
+Para probarlo sin clonar completo: con la API de contenidos de GitHub crea la rama demo/live desde demo-base, modifica README.md agregando una línea, y abre una PR hacia demo-base del fork (NUNCA hacia medusajs/medusa). Espera 5 segundos y muéstrame el log del servidor y el comentario que dejó en la PR. Ciérrala al terminar.
+```
+
+**Debe salir:** una PR nueva que el router clasifica y comenta sola al abrirse, igual que Jira en el acto 1.
 
 ## Paso 8 — Cierre con fast-jev-compaction
 

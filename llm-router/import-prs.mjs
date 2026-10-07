@@ -10,6 +10,7 @@
  *   node llm-router/import-prs.mjs --repo=medusajs/medusa --count=20
  *   node llm-router/import-prs.mjs --source=git --path=../medusajs/medusa --count=20
  *   node llm-router/import-prs.mjs --repo=TU-ORG/TU-REPO --count=20 --exclude-docs
+ *   node llm-router/import-prs.mjs --repo=TU-USUARIO/medusa --state=open --count=20   (las PRs abiertas de tu fork)
  *
  * Requiere: Node 20+, git; con --source=github también `gh auth login`.
  */
@@ -73,9 +74,10 @@ function fromGitHub() {
   const repo = args.repo;
   if (!repo) throw new Error("Falta --repo=owner/name");
   console.error(`→ GitHub API: últimas PRs mergeadas de ${repo}`);
+  const STATE = args.state ?? "merged"; // merged | open
   const list = JSON.parse(
-    sh("gh", ["api", `repos/${repo}/pulls`, "-X", "GET", "-f", "state=closed", "-f", "per_page=60", "-f", "sort=updated", "-f", "direction=desc"])
-  ).filter((p) => p.merged_at);
+    sh("gh", ["api", `repos/${repo}/pulls`, "-X", "GET", "-f", `state=${STATE === "open" ? "open" : "closed"}`, "-f", "per_page=60", "-f", "sort=created", "-f", "direction=desc"])
+  ).filter((p) => (STATE === "open" ? true : p.merged_at));
 
   const prs = [];
   for (const p of list) {
@@ -92,6 +94,8 @@ function fromGitHub() {
       title: p.title,
       author: p.user?.login,
       mergedAt: p.merged_at,
+      state: p.state,
+      headSha: p.head?.sha,
       files: fileNames.slice(0, MAX_FILES),
       changedFiles: detail.changed_files,
       additions: detail.additions,
@@ -149,6 +153,9 @@ function fromGit() {
     prs.push({
       id: `PR-${number}`,
       number,
+      sha,
+      parentSha: sh("git", ["-C", path, "rev-parse", `${sha}^`]).trim(),
+      mergeStyle: squash ? "squash" : "merge",
       url: `https://github.com/${repo}/pull/${number}`,
       title,
       author,

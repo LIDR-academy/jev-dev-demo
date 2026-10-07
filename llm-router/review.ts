@@ -2,18 +2,21 @@
  * Revisa el lote de PRs en dos modos y guarda results/<mode>.json.
  *   npm run review -- --mode=direct   → todas las PRs al modelo grande
  *   npm run review -- --mode=jev      → Jev decide la ruta por PR
- *   opciones: --data=data/prs-real.json (default) | data/prs.json · --concurrency=3 · --mock
+ *   opciones: --data=data/prs-real.json (default) | data/prs-fork.json · --concurrency=3 · --mock
+ *             --comment  → deja el veredicto del router como comentario en cada PR (necesita GITHUB_TOKEN y PRs en tu fork)
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { routePR, type PR, type RouteDecision } from "./router.ts";
 import { reviewPR, modelFor, LLM_MOCK, type Review } from "./llm.ts";
 import { MOCK as JEV_MOCK } from "../shared/jev.ts";
 import { bold, dim, green, yellow, cyan, gray, magenta, colorRoute } from "../shared/ui.ts";
+import { commentOnPR, routerComment } from "../shared/github.ts";
 
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split("=")[1];
 const MODE = (arg("mode") ?? "jev") as "direct" | "jev";
 const DATA = arg("data") ?? "data/prs-real.json";
 const CONCURRENCY = Number(arg("concurrency") ?? 3);
+const COMMENT = process.argv.includes("--comment");
 
 const raw = JSON.parse(readFileSync(DATA, "utf8"));
 const prs: PR[] = Array.isArray(raw) ? raw : raw.prs;
@@ -37,6 +40,11 @@ async function one(pr: PR) {
     );
   }
   const review = await reviewPR(pr, route);
+  if (COMMENT && MODE === "jev" && decision) {
+    const r = await commentOnPR(pr.url, routerComment(decision, review));
+    if (r !== "ok" && r !== "skipped") console.log(yellow(`  ⚠ comentario en ${pr.id}: ${r}`));
+    else if (r === "ok") console.log(gray(`  💬 comentario publicado en ${pr.url}`));
+  }
   if (MODE === "direct") console.log(`${cyan(pr.id.padEnd(9))} → ${magenta("sonnet")} ${gray(`${review.input_tokens} in / ${review.output_tokens} out · ${review.ms} ms`)}  ${dim(pr.title.slice(0, 58))}`);
   results.push({ pr: { id: pr.id, number: pr.number, url: pr.url, title: pr.title, additions: pr.additions, deletions: pr.deletions, expected: pr.expected }, mode: MODE, route, model: modelFor(route), decision, review });
 }

@@ -1,11 +1,14 @@
 {
   "repo": "medusajs/medusa",
-  "importedAt": "2026-10-07T03:52:58.690Z",
+  "importedAt": "2026-10-07T16:04:53.720Z",
   "source": "git",
   "prs": [
     {
       "id": "PR-17152",
       "number": 17152,
+      "sha": "9c99e558f269849fe7aaaf95a4e929ca2612e2dd",
+      "parentSha": "f104453af2c5b235dfdbdaa271c9f8a18195de69",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17152",
       "title": "docs: document translation update merging and React version mismatch troubleshooting [automated]",
       "author": "Shahed Nasser",
@@ -23,6 +26,9 @@
     {
       "id": "PR-17153",
       "number": 17153,
+      "sha": "f104453af2c5b235dfdbdaa271c9f8a18195de69",
+      "parentSha": "a831bf6756278e349206b832c975cbbd41695ca6",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17153",
       "title": "chore(utils): bump `@graphql-tools/merge` and `@graphql-tools/schema` to pull patched `@graphql-tools/utils`",
       "author": "Shahed Nasser",
@@ -41,6 +47,9 @@
     {
       "id": "PR-17142",
       "number": 17142,
+      "sha": "a831bf6756278e349206b832c975cbbd41695ca6",
+      "parentSha": "14499a2e9309d653c0e4ec6aec3f88079751b4d2",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17142",
       "title": "docs: document organization Connections settings page [automated]",
       "author": "Shahed Nasser",
@@ -63,6 +72,9 @@
     {
       "id": "PR-17147",
       "number": 17147,
+      "sha": "14499a2e9309d653c0e4ec6aec3f88079751b4d2",
+      "parentSha": "55928e136e034d96113ab0750f4ba7254c8ae22c",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17147",
       "title": "chore(deps): bump the security-updates group across 1 directory with 3 updates",
       "author": "dependabot[bot]",
@@ -84,6 +96,9 @@
     {
       "id": "PR-17148",
       "number": 17148,
+      "sha": "55928e136e034d96113ab0750f4ba7254c8ae22c",
+      "parentSha": "4f3cfccff729213dca851550e33eb2a2a2321965",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17148",
       "title": "docs: fix links in search overview",
       "author": "Shahed Nasser",
@@ -101,6 +116,9 @@
     {
       "id": "PR-17141",
       "number": 17141,
+      "sha": "4f3cfccff729213dca851550e33eb2a2a2321965",
+      "parentSha": "88788232fed8011331221b9ecac7937a766685bb",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17141",
       "title": "fix(loyalty-plugin): make allowed gift card fields matcher more specific",
       "author": "Nicolas Gorga",
@@ -118,6 +136,9 @@
     {
       "id": "PR-17145",
       "number": 17145,
+      "sha": "88788232fed8011331221b9ecac7937a766685bb",
+      "parentSha": "f2ba31c2912f3d750598d18c279ccdea0a356ef3",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17145",
       "title": "chore(deps): bump figlet to 1.12.0 to fix GHSA-62ch-8vmq-8xm7",
       "author": "medusa-os-bot[bot]",
@@ -134,6 +155,9 @@
     {
       "id": "PR-17138",
       "number": 17138,
+      "sha": "f2ba31c2912f3d750598d18c279ccdea0a356ef3",
+      "parentSha": "534b829b41d235247bfe98790be4b14ed46e5bd5",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17138",
       "title": "docs: add section on login with cloud requirement for mcp",
       "author": "Shahed Nasser",
@@ -152,6 +176,9 @@
     {
       "id": "PR-17107",
       "number": 17107,
+      "sha": "534b829b41d235247bfe98790be4b14ed46e5bd5",
+      "parentSha": "0b1b901fe85532767932423fbd1768693d951aff",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17107",
       "title": "chore: drop Node.js 20 support and require Node.js v22.22.0 or later",
       "author": "Shahed Nasser",
@@ -192,6 +219,9 @@
     {
       "id": "PR-17108",
       "number": 17108,
+      "sha": "0b1b901fe85532767932423fbd1768693d951aff",
+      "parentSha": "cb317641b01d1dad1f7d76816a402049e9ba4df1",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17108",
       "title": "docs: clarify fork remote setup",
       "author": "Ankit Pandey",
@@ -208,6 +238,9 @@
     {
       "id": "PR-17102",
       "number": 17102,
+      "sha": "b561a37343f4132d0f3a243e7722260797c3cf85",
+      "parentSha": "eca9cad808021298b629523d4976d219871fa9fb",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17102",
       "title": "fix: Allow replacing the transport for search",
       "author": "Stevche Radevski",
@@ -229,6 +262,9 @@
     {
       "id": "PR-17099",
       "number": 17099,
+      "sha": "dab83ec94a8d60446e15eb982617b7c1cc7589a2",
+      "parentSha": "e6510b1f51170834f136e927c3d30e463da32750",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17099",
       "title": "feat: Support multiple payment accounts for medusa payments",
       "author": "Stevche Radevski",
@@ -252,6 +288,9 @@
     {
       "id": "PR-17048",
       "number": 17048,
+      "sha": "e6510b1f51170834f136e927c3d30e463da32750",
+      "parentSha": "9aa921a62139888fed08aee7db1480cff0a3ee40",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17048",
       "title": "fix(utils): aggregate non-Error promise rejections without crashing",
       "author": "fadi romdhan",
@@ -270,6 +309,9 @@
     {
       "id": "PR-17035",
       "number": 17035,
+      "sha": "9aa921a62139888fed08aee7db1480cff0a3ee40",
+      "parentSha": "2e6554c59e1d95b9ac52329d40190ce9d6ed1dd7",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17035",
       "title": "fix(medusa): report a failed migration script instead of exiting 0",
       "author": "gautamyash",
@@ -288,6 +330,9 @@
     {
       "id": "PR-17077",
       "number": 17077,
+      "sha": "2e6554c59e1d95b9ac52329d40190ce9d6ed1dd7",
+      "parentSha": "a49dd4d78fdfad0bba8708bc3ef78e1aaae79123",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17077",
       "title": "fix(loyalty-plugin): correct transaction note for store credit debits",
       "author": "Suryaprakash1657",
@@ -305,6 +350,9 @@
     {
       "id": "PR-17083",
       "number": 17083,
+      "sha": "a49dd4d78fdfad0bba8708bc3ef78e1aaae79123",
+      "parentSha": "d5e01f88a32961fda4550bf54b6014ce4e5a64ba",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17083",
       "title": "fix(i18n): correct Czech plural forms for counts of 5 and above",
       "author": "David Stratil",
@@ -322,6 +370,9 @@
     {
       "id": "PR-17061",
       "number": 17061,
+      "sha": "d5e01f88a32961fda4550bf54b6014ce4e5a64ba",
+      "parentSha": "7906936a5f360acee5f0b8790919e959c7e4a2eb",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17061",
       "title": "fix(dashboard): use display_name from API in regions table countries cell (#17060)",
       "author": "PINYO PATTANAWASANPORN",
@@ -339,6 +390,9 @@
     {
       "id": "PR-16669",
       "number": 16669,
+      "sha": "7906936a5f360acee5f0b8790919e959c7e4a2eb",
+      "parentSha": "d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/16669",
       "title": "feat(dashboard): add refund reason selector to balance settlement form",
       "author": "vansh",
@@ -356,6 +410,9 @@
     {
       "id": "PR-17089",
       "number": 17089,
+      "sha": "d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a",
+      "parentSha": "61ce62df844ad5d62a4e87f9845b1d2f7f2cd28b",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/17089",
       "title": "chore: drop Node.js 20 support and require Node.js v22.15.0 or later",
       "author": "Shahed Nasser",
@@ -396,6 +453,9 @@
     {
       "id": "PR-16934",
       "number": 16934,
+      "sha": "61ce62df844ad5d62a4e87f9845b1d2f7f2cd28b",
+      "parentSha": "df9f67846c31f743560bad0fbf21dde18b11d33a",
+      "mergeStyle": "squash",
       "url": "https://github.com/medusajs/medusa/pull/16934",
       "title": "i18n complete the th dashboard locale",
       "author": "Michael Lip",
