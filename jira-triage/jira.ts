@@ -36,6 +36,28 @@ const adf = (text: string) => ({
   content: [{ type: "paragraph", content: text.split("\n").flatMap((l, i) => (i ? [{ type: "hardBreak" }, { type: "text", text: l }] : [{ type: "text", text: l }])) }],
 });
 
+/** Jira manda la descripción en ADF; la aplanamos a texto. */
+export function adfToText(node: any): string {
+  if (!node) return "";
+  if (typeof node === "string") return node;
+  if (node.type === "text") return node.text ?? "";
+  if (node.type === "hardBreak") return "\n";
+  const inner = (node.content ?? []).map(adfToText).join("");
+  return node.type === "paragraph" ? inner + "\n" : inner;
+}
+
+/** Lee un issue existente (lo crea Claude Code con el MCP de Atlassian; aquí solo lo clasificamos). */
+export async function getIssue(key: string) {
+  const d = await jira(`/issue/${key}?fields=summary,description,reporter,labels`);
+  return {
+    key: d.key as string,
+    title: (d.fields?.summary ?? "") as string,
+    description: adfToText(d.fields?.description).trim(),
+    reporter: (d.fields?.reporter?.displayName ?? "desconocido") as string,
+    labels: (d.fields?.labels ?? []) as string[],
+  };
+}
+
 export async function createIssue(summary: string, description: string, labels: string[] = []) {
   if (JIRA_MOCK) return { key: `${PROJECT}-${Math.floor(Math.random() * 900 + 100)}`, mock: true };
   return jira("/issue", {

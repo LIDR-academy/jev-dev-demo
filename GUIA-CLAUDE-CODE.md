@@ -66,7 +66,16 @@ Finalmente crea un issue de prueba, aplícale una clasificación de ejemplo con 
 
 ---
 
-## Paso 4 — Túnel y webhook de Jira
+## Paso 4 — Triage en vivo desde Claude Code (MCP)
+
+```markdown
+Autentica el MCP de Atlassian con /mcp → atlassian. Luego escribe: /triage Pagué con mi tarjeta de débito y me llegaron dos cargos por el mismo pedido.
+Confirma que Claude creó el issue con el MCP, que `npm run triage -- <KEY>` lo clasificó con Jev y que en Jira tiene tipo, prioridad, etiqueta jev y el comentario de Jev.
+```
+
+**Debe salir:** `KAN-xx → bug/critica/pagos → apply` en menos de un segundo de Jev. Sin túnel ni webhook. El paso 4b es la alternativa con webhook, opcional.
+
+## Paso 4b — Túnel y webhook de Jira (opcional)
 
 ```markdown
 Arranca el servidor con `npm run server` en segundo plano y verifica GET http://localhost:3000/health.

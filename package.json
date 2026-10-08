@@ -10,6 +10,7 @@
   "scripts": {
     "server": "node --env-file-if-exists=.env jira-triage/server.ts",
     "batch": "node --env-file-if-exists=.env jira-triage/batch.ts",
+    "triage": "node --env-file-if-exists=.env jira-triage/triage.ts",
     "review": "node --env-file-if-exists=.env llm-router/review.ts",
     "compare": "node llm-router/compare.ts",
     "show-review": "node llm-router/show-review.ts",

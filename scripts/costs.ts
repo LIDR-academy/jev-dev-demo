@@ -22,6 +22,9 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
   if (f === "triage.json") {
     const jt = d.tokens ?? d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
     rows.push({ ejecucion: "Acto 1 · triage de Jira", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
+  } else if (f === "triage-vivo.json") {
+    const jt = d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
+    rows.push({ ejecucion: "Acto 1 · triage en vivo (MCP)", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
   } else if (f === "code-health.json") {
     const ex = d.findings.filter((x: any) => x.explanation);
     const llmIn = ex.reduce((s: number, x: any) => s + x.explanation.input_tokens, 0), llmOut = ex.reduce((s: number, x: any) => s + x.explanation.output_tokens, 0);

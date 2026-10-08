@@ -30,6 +30,7 @@ npm run costs                                            # coste de cada ejecuci
 | `jira-triage/classify.ts` | Las 4 preguntas tipadas del acto 1 y el comentario que Jev deja en el ticket. |
 | `jira-triage/jira.ts` | Cliente de Jira Cloud REST v3. Mapeo de opciones de Jev a tipos/prioridades de Jira. |
 | `jira-triage/server.ts` | Servidor de webhooks (`node:http`): `/webhook/jira`, `/webhook/github`, `/health`. |
+| `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
 | `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. |
 | `sample-app/` | Módulo de pagos de la tienda de los tickets (TypeScript). Trae **7 bugs sembrados** documentados en `data/bugs-sembrados.json` y 3 funciones limpias de control. Es el código que "vas a tocar" en el acto 2. |
 | `data/tickets-files.json` | Qué archivos de `sample-app/` toca cada ticket (T01, T03, T11, T16). |
@@ -147,8 +148,7 @@ Si además quieres **abrir una PR en vivo** y que el router la comente al instan
 
 ```bash
 npm run reset
-npm run server                                  # panel izquierdo; deja corriendo
-# crea un ticket en Jira → debe aparecer la línea de log y el ticket cambia
+# en Claude Code: /triage <queja de cliente> → crea el issue con el MCP y Jev lo clasifica
 npm run batch -- --no-create                    # los 30 importados por CSV
 npm run review -- --mode=direct                 # 1–2 min; NO en vivo, precalcula
 npm run review -- --mode=jev --concurrency=3    # ~40 s; este sí en vivo
@@ -164,7 +164,7 @@ Cronométralo dos veces, una con hotspot del celular. Graba ambos actos como res
 | --- | --- | --- |
 | 0 | Jira con 30 tickets: 8 en Listo, 22 sin clasificar | "Esto ve un manager cada lunes" |
 | 2 | VS Code: `shared/thresholds.ts` | Los umbrales son código tuyo, no del modelo |
-| 3 | Crear issue "El checkout falla con tarjetas Amex en producción" | Log: `DEMO-31 → bug/critica/pagos (96/89/97 %) → apply` y el ticket cambia solo |
+| 3 | En Claude Code: `/triage Pagué con débito y me llegaron dos cargos por el mismo pedido` | Claude crea el issue con el MCP y Jev lo clasifica: `KAN-128 → bug/critica/pagos (89/99/100 %) → apply` |
 | 5 | Abrir el ticket | Comentario de Jev con las tres decisiones y su % |
 | 6 | `npm run batch -- --no-create` | 22 líneas en ~3 s, tabla, costo < 1 centavo |
 | 8 | Filtro `labels = revisar` | Los 3 ambiguos escalados |

@@ -9,7 +9,7 @@
  */
 import { createServer } from "node:http";
 import { classifyTicket, buildComment } from "./classify.ts";
-import { applyClassification, addComment, JIRA_MOCK } from "./jira.ts";
+import { applyClassification, addComment, adfToText, JIRA_MOCK } from "./jira.ts";
 import { MOCK as JEV_MOCK } from "../shared/jev.ts";
 import { bold, dim, green, yellow, red, cyan, gray, colorAction } from "../shared/ui.ts";
 import { routePR } from "../llm-router/router.ts";
@@ -19,16 +19,6 @@ const SKIP_LABEL = process.env.SKIP_LABEL ?? "batch"; // tickets sembrados por l
 
 const readBody = (req: import("node:http").IncomingMessage) =>
   new Promise<string>((res) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => res(b)); });
-
-/** Jira manda la descripción en ADF; la aplanamos a texto. */
-function adfToText(node: any): string {
-  if (!node) return "";
-  if (typeof node === "string") return node;
-  if (node.type === "text") return node.text ?? "";
-  if (node.type === "hardBreak") return "\n";
-  const inner = (node.content ?? []).map(adfToText).join("");
-  return node.type === "paragraph" ? inner + "\n" : inner;
-}
 
 async function handleJira(payload: any) {
   const issue = payload.issue;
