@@ -83,7 +83,7 @@ function fromGitHub() {
   for (const p of list) {
     if (prs.length >= COUNT) break;
     const detail = JSON.parse(sh("gh", ["api", `repos/${repo}/pulls/${p.number}`]));
-    const files = JSON.parse(sh("gh", ["api", `repos/${repo}/pulls/${p.number}/files`, "-f", "per_page=100"]));
+    const files = JSON.parse(sh("gh", ["api", `repos/${repo}/pulls/${p.number}/files`, "-X", "GET", "-f", "per_page=100"]));
     const fileNames = files.map((f) => f.filename);
     if (skipDocs(fileNames)) continue;
     const patch = files.map((f) => `diff --git a/${f.filename} b/${f.filename}\n${f.patch ?? ""}`).join("\n");

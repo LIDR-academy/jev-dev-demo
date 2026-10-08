@@ -21,10 +21,10 @@ Regla para todos los prompts: Claude Code **no debe imprimir llaves en pantalla 
 Estás en la carpeta jev-dev-demo. Lee README.md y GUIA-CLAUDE-CODE.md completos antes de hacer nada.
 Es una demo de 30 minutos que ya funciona en modo mock. No reescribas el código ni cambies la estructura: vamos a configurarlo, conectarlo a servicios reales, publicarlo en GitHub y ensayarlo.
 Reglas: nunca imprimas el contenido de .env ni ninguna llave; nunca hagas commit de .env ni de results/; antes de cada cambio en un archivo .ts dime qué vas a cambiar y por qué.
-Confirma que entendiste el patrón "estado → pregunta tipada → Jev → probabilidad → tu código decide → acción" y corre `node --version`, `npm test` y `npm run batch -- --mock`. Reporta si algo falla.
+Confirma que entendiste el patrón "estado → pregunta tipada → Jev → probabilidad → tu código decide → acción" y corre `node --version`, `npm test`, `npm run batch -- --mock`, `npm run scan -- --ticket=T03 --explain --mock` y `npm run costs`. Reporta si algo falla.
 ```
 
-**Debe salir:** 10 tests en verde y la tabla de 30 tickets con 3 escalados.
+**Debe salir:** 10 tests en verde, la tabla de 30 tickets con 3 escalados, el pre-vuelo con 6/6 bugs sembrados detectados y la tabla de costes.
 
 ---
 
@@ -82,12 +82,33 @@ Luego crea un issue en DEMO por API con título "Prueba webhook: login falla en 
 ## Paso 5 — Sembrar el backlog
 
 ```markdown
-Corre `npm run reset` para limpiar y luego `npm run seed` para crear los 30 tickets de data/tickets.json en DEMO con la etiqueta batch, sin clasificar.
-Verifica en Jira (por API) que hay 30 issues con etiqueta batch y que ninguno tiene la etiqueta jev ni comentario de Jev: el servidor debe haberlos ignorado por la etiqueta batch. Si alguno se clasificó, dime cuál y por qué.
-Después corre `npm run batch -- --no-create` y confirma que los 30 quedan clasificados, que los 3 ambiguos (T28, T29, T30) quedaron con acción escalate, y guarda la salida de consola en results/ensayo-acto1.txt.
+Corre `npm run reset` para limpiar y luego `npm run seed -- --done=8` para crear los 30 tickets de data/tickets.json en DEMO con la etiqueta batch, sin clasificar, y mover los últimos 8 a Listo. Si la transición a Listo falla, muéstrame los nombres de estado que devuelve Jira y ajusta el patrón de transitionTo en jira-triage/jira.ts.
+Verifica en Jira (por API) que hay 30 issues con etiqueta batch, 8 en Listo, y que ninguno tiene la etiqueta jev ni comentario de Jev: el servidor debe haberlos ignorado por la etiqueta batch. Si alguno se clasificó, dime cuál y por qué.
+Después corre `npm run batch -- --no-create` y confirma que los 22 pendientes quedan clasificados (los 8 en Listo no se tocan), que los 3 ambiguos (T28, T29, T30) quedaron con acción escalate, y guarda la salida de consola en results/ensayo-acto1.txt.
 ```
 
-**Debe salir:** 30 sembrados sin clasificar, luego 30 clasificados en segundos con 3 escalados. Ese es el acto 1 completo, real.
+**Debe salir:** 30 sembrados (8 en Listo), luego 22 clasificados en segundos con 3 escalados. Ese es el acto 1 completo, real.
+
+---
+
+## Paso 5b — Acto 2 con Jev real: pre-vuelo del código
+
+```markdown
+Lee data/bugs-sembrados.json y sample-app/ para entender qué bugs hay y dónde. No los corrijas ni los muevas.
+Corre `npm run scan -- --ticket=T03` SIN mock (Jev real, sin LLM) y dime: cuántas funciones marcó, cuántas quedaron limpias, y el resultado de la autoevaluación "Contra bugs-sembrados.json: X/6 detectados · falsos positivos: Y".
+Si detecta menos de 5/6 o marca alguna función de control, no toques el escáner: ajusta las descripciones de los criteria en code-health/scan.ts (más concretas, con ejemplos de lo que sí y lo que no cuenta) y vuelve a correr hasta que pase. Dime qué cambiaste.
+Luego corre `npm run scan -- --ticket=T03 --explain` (Claude real) y muéstrame las explicaciones. Verifica que Claude confirma B1 (siete responsabilidades), B3 (90 % marcado como reembolsado) y B4 (catch que devuelve éxito) con la línea concreta.
+Repite el escaneo para T01 y T11 y guarda las tres salidas en results-backup/.
+Prueba el skill: escribe `/pre-vuelo T03` en esta sesión y confirma que presenta tabla, explicaciones y recomendación de orden.
+```
+
+**Debe salir:** 6/6 en T03 con 0 falsos positivos, Claude confirmando los bugs con líneas concretas, y el skill `/pre-vuelo` funcionando. Si Jev real detecta distinto que el mock, lo que manda es Jev real: afina los `criteria`, no los umbrales.
+
+## Paso 5c — Costes
+
+```markdown
+Corre `npm run costs` y luego el skill `/costos`. Confirma que aparecen el acto 1 (triage) y el acto 2 (pre-vuelo) con sus tokens y USD reales, y que el total de la demo hasta ahora es menor a $0.10 USD. Si los precios de prices.json no están actualizados, hazlo ahora desde las páginas oficiales y cita las URLs en _nota.
+```
 
 ---
 
@@ -177,5 +198,6 @@ Dame el enlace del repo y un párrafo de 3 líneas para pegar en Slack con el en
 | Jev responde 400 con un campo | "Compara el body que mandamos en shared/jev.ts con la documentación oficial de TypeSafe y ajusta solo los nombres de campo." |
 | Jira 400 al cambiar issuetype | "Cambia ISSUE_TYPE en jira.ts a los nombres exactos que devuelve GET /rest/api/3/project/DEMO, o deja el tipo sin cambiar y pon el tipo solo en el comentario." |
 | El webhook no llega | "Confirma que el túnel sigue vivo, que la URL del webhook en Jira coincide, y manda un POST manual a /webhook/jira con un payload de ejemplo para separar el problema de Jira del problema del servidor." |
+| El pre-vuelo marca funciones de control o no detecta un bug sembrado | "Muéstrame las respuestas de Jev para esa función en results/code-health.json y ajusta solo la descripción del criterio que falló en code-health/scan.ts. No cambies SCAN_THRESHOLD salvo que el ruido sea general." |
 | El ahorro sale bajo | "Está bien, es el número real. Muéstrame la tabla de rutas: si hay PRs triviales en sonnet, afina los criteria de router.ts; si no, lo dejamos así." |
 | Se acaba el tiempo en la demo | Salta a `npm run compare` con `results-backup/` y muestra la tabla final. |

@@ -1,0 +1,7 @@
+{
+  "_nota": "Qué archivos hay que tocar para cada ticket. En un repo real esto lo infiere Claude Code o un índice; aquí es explícito para la demo.",
+  "T01": ["sample-app/payments/gateway.ts", "sample-app/payments/totals.ts"],
+  "T03": ["sample-app/payments/refund.ts", "sample-app/payments/totals.ts", "sample-app/payments/tax.ts", "sample-app/payments/notify.ts", "sample-app/orders/status.ts"],
+  "T11": ["sample-app/payments/totals.ts", "sample-app/payments/tax.ts"],
+  "T16": ["sample-app/payments/gateway.ts", "sample-app/payments/refund.ts", "sample-app/orders/status.ts"]
+}

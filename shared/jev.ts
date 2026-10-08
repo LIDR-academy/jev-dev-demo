@@ -69,7 +69,32 @@ function mockAnswer(state: unknown, questions: Record<string, Question>) {
   const vague = text.replace(/[^a-záéíóúñ ]/g, " ").split(/\s+/).filter(Boolean).length < 8;
   const answers: Record<string, Answer> = {};
 
+  const sig = (st.signals ?? {}) as Record<string, any>;
+  const src = String(st.source ?? "");
+  const isCode = Boolean(st.function && src);
   for (const [name, q] of Object.entries(questions)) {
+    // ── Preguntas de código (pre-vuelo): heurísticas sobre las señales baratas ──
+    if (isCode) {
+      const r = (p: number) => round(Math.min(0.98, Math.max(0.02, p)));
+      if (name === "responsabilidades") {
+        const varias = (sig.lines ?? 0) > 35 && (sig.side_effect_kinds ?? 0) >= 3;
+        const conf = varias ? 0.9 : 0.88;
+        answers[name] = { type: "choice", choice: varias ? "varias" : "una", confidence: r(conf), probabilities: { una: r(varias ? 1 - conf : conf), varias: r(varias ? conf : 1 - conf) } };
+        continue;
+      }
+      if (name === "traga_errores") { answers[name] = { type: "noul", noul: r(sig.catch_swallow_hint && /catch[\s\S]*?ok:\s*true|catch\s*\([^)]*\)\s*\{\s*(\/\/[^\n]*\s*)*\}/.test(src) ? 0.85 + Math.random() * 0.1 : 0.05 + Math.random() * 0.08) }; continue; }
+      if (name === "muta_entrada") { answers[name] = { type: "noul", noul: r((sig.mutated_params ?? []).length ? 0.8 + Math.random() * 0.15 : 0.04 + Math.random() * 0.08) }; continue; }
+      if (name === "numero_magico") { const lits = (sig.decimal_literals ?? []).filter((x: string) => !["0.5"].includes(x)); answers[name] = { type: "noul", noul: r(lits.length ? 0.7 + Math.random() * 0.2 : 0.05 + Math.random() * 0.08) }; continue; }
+      if (name === "logica_duplicada") { const sim = (st.similar_to as any[] | undefined) ?? []; const dup = sim.length > 0 && /1\.16|toFixed|Math\.round/.test(src) && (sig.lines ?? 0) <= 12; answers[name] = { type: "noul", noul: r(dup ? 0.65 + Math.random() * 0.2 : 0.06 + Math.random() * 0.1) }; continue; }
+      if (name === "severidad" && q.type === "score") {
+        const flags = [(sig.lines ?? 0) > 35 && (sig.side_effect_kinds ?? 0) >= 3, sig.catch_swallow_hint, (sig.mutated_params ?? []).length > 0, (sig.decimal_literals ?? []).length > 0].filter(Boolean).length;
+        const money = /refund|charge|tax|total|coupon|amount/i.test(String(st.function));
+        const idx = flags === 0 ? 0 : flags === 1 ? (money ? 2 : 1) : money ? 3 : 2;
+        const probs: Record<string, number> = {}; q.criteria.forEach((_, i) => (probs[String(i)] = i === idx ? 0.7 : 0.3 / (q.criteria.length - 1)));
+        answers[name] = { type: "score", score: round(idx + (flags ? 0.3 : 0.1)), confidence: 0.7, legend: Object.fromEntries(q.criteria.map((c, i) => [String(i), c])), probabilities: probs };
+        continue;
+      }
+    }
     if (q.type === "noul") {
       let p = 0.06 + Math.random() * 0.06;
       if (/humano|ambig|persona/.test(q.instructions) && (vague || has("no funciona", "esto es normal", "no sé cuándo", "y arreglar"))) p = 0.78 + Math.random() * 0.12;

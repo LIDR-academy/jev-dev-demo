@@ -26,7 +26,7 @@ console.log(bold(`\nTriage de ${tickets.length} tickets`), dim(`(${DATA}) · jev
 const t0 = performance.now();
 let keyed: { key: string; t: Ticket }[];
 if (NO_CREATE && !JIRA_MOCK) {
-  const found = await searchIssues(`project = ${projectKey} AND labels = batch ORDER BY created ASC`, 200);
+  const found = await searchIssues(`project = ${projectKey} AND labels = batch AND statusCategory != Done ORDER BY created ASC`, 200);
   // Emparejamos por orden de creación; si importaste el CSV en orden, coincide con tickets.json
   keyed = found.slice(0, tickets.length).map((f, i) => ({ key: f.key, t: tickets[i] }));
   console.log(dim(`${keyed.length} issues encontrados con etiqueta batch`));

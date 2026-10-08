@@ -1,0 +1,31 @@
+{
+  "_nota": "Bugs sembrados a propósito en sample-app/. Frente a la audiencia se llaman solo 'bugs'; esto se revela en el cierre.",
+  "bugs": [
+    { "id": "B1", "file": "sample-app/payments/refund.ts", "function": "processRefund", "type": "varias_responsabilidades",
+      "title": "Una función, siete trabajos",
+      "explain": "processRefund valida, calcula, llama a la pasarela, actualiza el pedido, manda el correo, escribe auditoría y métricas. Rompe el principio de responsabilidad única: cualquier cambio en el correo o en la auditoría obliga a tocar la lógica de dinero." },
+    { "id": "B2", "file": "sample-app/payments/refund.ts", "function": "processRefund", "type": "muta_entrada",
+      "title": "Muta el pedido que le pasaron",
+      "explain": "Modifica order.refunded y order.status directamente sobre el objeto de entrada. Quien llamó a la función ve cambios aunque el reembolso falle a medias. Es la causa raíz del ticket T03." },
+    { "id": "B3", "file": "sample-app/payments/refund.ts", "function": "processRefund", "type": "logica_sospechosa",
+      "title": "Reembolso parcial marcado como total",
+      "explain": "Si el acumulado llega al 90 % del total, el pedido se marca como 'refunded' aunque falte dinero por devolver. Es exactamente el ticket T03." },
+    { "id": "B4", "file": "sample-app/payments/gateway.ts", "function": "chargeGateway", "type": "traga_errores",
+      "title": "La pasarela falla y el cobro 'sale bien'",
+      "explain": "El catch devuelve ok:true con un paymentId inventado cuando la red falla. El checkout cree que cobró. Con Amex, que además manda el monto en centavos, el error 500 del ticket T01 se convierte en un cobro fantasma o duplicado (T16)." },
+    { "id": "B5", "file": "sample-app/payments/tax.ts", "function": "calculateTax", "type": "numero_magico",
+      "title": "0.16 sin nombre, en tres lugares",
+      "explain": "La tasa de IVA aparece como literal en tax.ts (0.16 y 1.16), en totals.ts (1.16) y en refund.ts (1.16). Si cambia la tasa o entra tasa cero, hay que cazar cuatro sitios." },
+    { "id": "B6", "file": "sample-app/payments/totals.ts", "function": "splitTotal", "type": "logica_duplicada",
+      "title": "El mismo desglose, calculado distinto",
+      "explain": "splitTotal (totals.ts) y removeTax (tax.ts) separan el IVA de un total, pero una redondea con toFixed sobre el subtotal y otra calcula el IVA como resta. Para $850.00 dan centavos distintos: el desglose del correo y el de la factura no cuadran." },
+    { "id": "B7", "file": "sample-app/payments/totals.ts", "function": "applyCoupon", "type": "muta_entrada",
+      "title": "El cupón se registra aunque ya estuviera aplicado",
+      "explain": "applyCoupon agrega el código al arreglo applied sin revisar si ya estaba, y descuenta de nuevo. Si el cliente regresa al carrito y vuelve a aplicar, se suma dos veces: ticket T11." }
+  ],
+  "controles": [
+    { "file": "sample-app/payments/notify.ts", "function": "sendRefundEmail", "nota": "Limpia. Jev no debe marcarla." },
+    { "file": "sample-app/orders/status.ts", "function": "updateOrderStatus", "nota": "Limpia. Jev no debe marcarla." },
+    { "file": "sample-app/payments/gateway.ts", "function": "refundGateway", "nota": "Maneja el error bien. Contraste con chargeGateway." }
+  ]
+}

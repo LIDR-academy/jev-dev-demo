@@ -71,6 +71,16 @@ export async function searchIssues(jql: string, maxResults = 100): Promise<{ key
   return data.issues ?? [];
 }
 
+/** Mueve un issue a un estado por nombre (p. ej. "Done"/"Listo"). Busca la transición disponible que coincida. */
+export async function transitionTo(key: string, statusPattern: RegExp = /^(done|listo|finalizad|terminad|cerrad|complet)/i) {
+  if (JIRA_MOCK) return { key, to: "Listo", mock: true };
+  const data = await jira(`/issue/${key}/transitions`);
+  const t = (data.transitions ?? []).find((x: any) => statusPattern.test(x.to?.name ?? "") || statusPattern.test(x.name ?? ""));
+  if (!t) throw new Error(`No hay transición a Done/Listo para ${key}. Disponibles: ${(data.transitions ?? []).map((x: any) => x.to?.name).join(", ")}`);
+  await jira(`/issue/${key}/transitions`, { method: "POST", body: JSON.stringify({ transition: { id: t.id } }) });
+  return { key, to: t.to?.name ?? t.name };
+}
+
 export async function deleteIssue(key: string) {
   if (JIRA_MOCK) return;
   await jira(`/issue/${key}?deleteSubtasks=true`, { method: "DELETE" });
