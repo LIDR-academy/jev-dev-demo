@@ -32,6 +32,8 @@ npm run costs                                            # coste de cada ejecuci
 | `jira-triage/server.ts` | Servidor de webhooks (`node:http`): `/webhook/jira`, `/webhook/github`, `/health`. |
 | `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
 | `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. Con `--mode=direct`, el "antes": Sonnet clasifica los mismos issues de Jira (solo lectura). |
+| `results-backup/` | Respaldo de corridas reales. Los tres "antes" (`triage-direct.json`, `code-health-direct.json`, `direct.json`) se restauran con `cp results-backup/*direct*.json results/` sin volver a gastar en Claude. |
+| `docs/Guion-demo-Jev.pdf` | Guion detallado de las tres demos. Se edita en `docs/Guion-demo-Jev.html` y se exporta a PDF con Chrome (imprimir → guardar como PDF). |
 | `../medusa-fork` | Clon de `LIDR-academy/medusa` (ruta en `MEDUSA_PATH`). Es el código que "vas a tocar" en la demo 2. |
 | `data/tickets-files.json` | Qué archivos toca cada ticket. `T03` → Medusa. |
 | `code-health/scan.ts` | **Demo 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |

@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guion de la demo · Jev decide, Claude trabaja</title>
+<style>
+  :root {
+    --ink: #212529; --muted: #5f6670; --line: #d6d9de; --zebra: #f6f7f9;
+    --purple: #5a3fc0; --purple-bg: #ece8f8; --dark: #212121;
+    --d1: #0e7c73; --d1-bg: #e2f2f0; --d2: #b4540c; --d2-bg: #fbece0; --d3: #1f5fc1; --d3-bg: #e2ecf9;
+    --warn: #b8860b; --warn-bg: #fdf6d3; --ok-bg: #e2f2f0;
+  }
+  @page {
+    size: Letter; margin: 0.9in 0.9in 0.85in;
+    @bottom-left { content: "Guion de la demo · Jev decide, Claude trabaja · LIDR"; font: 8pt Arial, sans-serif; color: #6b7280; border-top: 0.5pt solid #d6d9de; vertical-align: top; padding-top: 6pt; }
+    @bottom-right { content: counter(page); font: 8pt Arial, sans-serif; color: #6b7280; border-top: 0.5pt solid #d6d9de; vertical-align: top; padding-top: 6pt; }
+  }
+  @page cover { margin-top: 0; @bottom-left { content: none; border: 0; } @bottom-right { content: none; border: 0; } }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 10pt/1.45 Arial, Helvetica, sans-serif; }
+  code, pre, .mono { font-family: "Courier New", Courier, monospace; font-size: 8.6pt; color: #3b3f45; }
+  h1 { font-size: 22pt; margin: 0 0 12pt; }
+  h2 { font-size: 13pt; margin: 16pt 0 6pt; }
+  h3 { font-size: 11.5pt; color: var(--purple); margin: 14pt 0 5pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  .page { break-before: page; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 6pt; font-size: 8.6pt; break-inside: auto; }
+  tr { break-inside: avoid; }
+  th { background: var(--dark); color: #fff; text-align: left; font-weight: bold; padding: 5pt 6pt; }
+  td { padding: 5pt 6pt; border-bottom: 0.6pt solid var(--line); vertical-align: top; }
+  tbody tr:nth-child(even) td { background: var(--zebra); }
+  td.k { font-weight: bold; }
+  .d1 th { background: var(--d1); } .d2 th { background: var(--d2); } .d3 th { background: var(--d3); } .pu th { background: var(--purple); }
+  .say { font-style: italic; }
+  .note { font-size: 8pt; color: var(--muted); margin: 0 0 8pt; }
+  .call { border-left: 3.5pt solid var(--purple); background: var(--purple-bg); padding: 8pt 12pt; margin: 8pt 0 10pt; font-size: 9.6pt; }
+  .call.warn { border-color: var(--warn); background: var(--warn-bg); }
+  .call.d2 { border-color: var(--d2); background: var(--d2-bg); }
+  .call.ok { border-color: var(--d1); background: var(--ok-bg); }
+  pre { background: #f6f7f9; border: 0.6pt solid var(--line); padding: 8pt 10pt; white-space: pre-wrap; word-break: break-word; margin: 4pt 0 4pt; line-height: 1.35; font-size: 8pt; }
+  .q { margin: 6pt 0; }
+  .q td:first-child { width: 22%; font-family: "Courier New", monospace; font-size: 8.4pt; color: #3b3f45; }
+  .q tr.head td { background: #f1f2f4 !important; font-weight: bold; }
+  .q tr.head td:first-child b { font-family: Arial, sans-serif; font-size: 8.4pt; }
+  .t-d1 { color: var(--d1); } .t-d2 { color: var(--d2); } .t-d3 { color: var(--d3); }
+  .banner { display: flex; margin: 0 0 12pt; }
+  .banner .tag { color: #fff; font-weight: bold; font-size: 12pt; padding: 18pt 14pt; width: 1.05in; display: flex; align-items: center; justify-content: center; }
+  .banner .txt { flex: 1; padding: 9pt 14pt; }
+  .banner .txt b { display: block; font-size: 15pt; }
+  .banner .txt span { color: var(--muted); font-size: 9.6pt; }
+  .b1 .tag { background: var(--d1); } .b1 .txt { background: var(--d1-bg); }
+  .b2 .tag { background: var(--d2); } .b2 .txt { background: var(--d2-bg); }
+  .b3 .tag { background: var(--d3); } .b3 .txt { background: var(--d3-bg); }
+  .cover { page: cover; }
+  .cover .bar { height: 0.42in; background: var(--purple); margin: 0 -0.9in 3in; }
+  .cover h1 { font-size: 34pt; margin-bottom: 4pt; }
+  .cover .sub { color: var(--purple); font-size: 22pt; font-weight: bold; margin-bottom: 16pt; }
+  .cover .lede { color: var(--muted); font-size: 13pt; margin-bottom: 40pt; }
+  .cover table th { background: var(--purple); }
+  .cover td.k { width: 28%; }
+  .new { background: #fff3b0; }
+</style>
+</head>
+<body>
+
+<!-- Portada -->
+<section class="cover">
+  <div class="bar"></div>
+  <h1>Guion de la demo</h1>
+  <div class="sub">Jev decide, Claude trabaja</div>
+  <p class="lede">Qué pasa en cada demo, qué comando o skill se usa, qué se le pregunta a Jev y dónde vive cada cosa. Para leer antes de la sesión.</p>
+  <table>
+    <thead><tr><th>Recurso</th><th>Dónde</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Repo</td><td>github.com/LIDR-academy/jev-dev-demo (carpeta local: eventojev/jev-dev-demo)</td></tr>
+      <tr><td class="k">Código de la demo 2</td><td>github.com/LIDR-academy/medusa (carpeta local: eventojev/medusa-fork)</td></tr>
+      <tr><td class="k">Jira</td><td>lidr-demo.atlassian.net · proyecto KAN · tickets KAN-221 a KAN-250</td></tr>
+      <tr><td class="k">PRs de la demo 3</td><td>github.com/LIDR-academy/medusa/pulls (20 PRs abiertas)</td></tr>
+      <tr><td class="k">Duración</td><td>30 minutos: demo 1 (10) · demo 2 (8) · demo 3 (8) · cierre (4)</td></tr>
+      <tr><td class="k">Estado del ensayo</td><td>7 de octubre de 2026, todo con servicios reales (Jev, Claude por CLI, Jira, GitHub)</td></tr>
+    </tbody>
+  </table>
+  <div class="call" style="margin-top:28pt"><b>El patrón en una línea.</b> Estado → pregunta tipada → Jev → probabilidad → <b>tu código decide</b> → acción. Jev no escribe ni razona: elige entre opciones que tú definiste y dice con qué probabilidad. Claude solo trabaja donde Jev dice que hace falta, con el modelo que hace falta.</div>
+</section>
+
+<!-- 1. Panorama -->
+<section class="page">
+  <h1>1. Panorama</h1>
+  <p>Son tres demos sobre el mismo patrón. En las tres, Jev responde preguntas cerradas en milisegundos y por fracciones de centavo; unos umbrales escritos en código deciden qué hacer con esas probabilidades; y Claude solo entra cuando hace falta pensar.</p>
+  <table>
+    <thead><tr><th>Demo</th><th>Pregunta de negocio</th><th>Qué decide Jev</th><th>Qué hace Claude</th><th>Comando o skill clave</th></tr></thead>
+    <tbody>
+      <tr><td><b>1 · Triage</b><br>min 0–10</td><td>¿Qué tipo, prioridad y equipo tiene cada ticket?</td><td>4 preguntas por ticket: tipo, prioridad, equipo, si necesita humano</td><td>Crea el issue desde una queja (MCP de Atlassian)</td><td class="mono">/triage<br>npm run batch -- --no-create</td></tr>
+      <tr><td><b>2 · Pre-vuelo</b><br>min 10–18</td><td>Antes de tocar este código, ¿dónde están los problemas?</td><td>6 preguntas por función de Medusa real</td><td>Explica solo las funciones marcadas</td><td class="mono">npm run scan -- --ticket=T03 --explain<br>/pre-vuelo T03</td></tr>
+      <tr><td><b>3 · Router</b><br>min 18–26</td><td>¿Con qué modelo revisar cada PR?</td><td>Complejidad y si toca dinero → reglas, Haiku o Sonnet</td><td>Revisa cada PR con el modelo elegido</td><td class="mono">npm run review -- --mode=jev ...<br>npm run compare</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Dónde está cada cosa</h2>
+  <table>
+    <thead><tr><th style="width:38%">Qué</th><th>Dónde</th></tr></thead>
+    <tbody>
+      <tr><td>La demo completa (código, comandos, skills)</td><td><code>eventojev/jev-dev-demo</code> → GitHub <code>LIDR-academy/jev-dev-demo</code></td></tr>
+      <tr><td>Código real que escanea la demo 2</td><td><code>eventojev/medusa-fork</code> (412 MB) → <code>LIDR-academy/medusa</code>, commit <code>d436d2fb</code></td></tr>
+      <tr><td>Las 20 PRs de la demo 3</td><td>PRs abiertas en <code>LIDR-academy/medusa</code>; su copia local en <code>data/prs-fork.json</code></td></tr>
+      <tr><td>Llaves (Jev, Anthropic, Jira)</td><td><code>jev-dev-demo/.env</code> (nunca se sube; nunca se muestra en pantalla)</td></tr>
+      <tr><td>Preguntas a Jev de la demo 1</td><td><code>jira-triage/classify.ts</code></td></tr>
+      <tr><td>Preguntas a Jev de la demo 2</td><td><code>code-health/scan.ts</code></td></tr>
+      <tr><td>Preguntas a Jev de la demo 3</td><td><code>llm-router/router.ts</code></td></tr>
+      <tr><td>Los umbrales (lo que "decide tu código")</td><td><code>shared/thresholds.ts</code> y <code>SCAN_THRESHOLD</code> en <code>.env</code></td></tr>
+      <tr><td>Prompts de Claude</td><td><code>code-health/explain.ts</code> (demo 2) · <code>llm-router/llm.ts</code> (demo 3)</td></tr>
+      <tr><td>Cliente de Jev / de Claude</td><td><code>shared/jev.ts</code> · <code>shared/claude.ts</code> (motor <code>CLAUDE_ENGINE=cli</code>)</td></tr>
+      <tr><td>Skills de Claude Code</td><td><code>.claude/skills/</code>: triage, pre-vuelo, costos</td></tr>
+      <tr><td>MCP de Atlassian</td><td><code>.mcp.json</code> (se autentica con <code>/mcp</code> → atlassian)</td></tr>
+      <tr><td>Precios</td><td><code>llm-router/prices.json</code></td></tr>
+      <tr><td>Resultados de cada corrida</td><td><code>results/</code> (no se sube) · respaldo en <code>results-backup/</code></td></tr>
+      <tr><td>Guion corto y referencia</td><td><code>README.md</code> (tabla "El día de la demo") · <code>GUIA-CLAUDE-CODE.md</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="page">
+  <h2>Cómo se le habla a Jev</h2>
+  <p>Jev (TypeSafe AI) es un modelo <i>System One</i>: no genera texto, responde <b>preguntas tipadas</b> con probabilidades calibradas. Cada llamada es un <code>POST https://api.typesafe.ai/v1/systemone</code> con tres campos: <code>model</code> (<code>jev-1.13.0</code>), <code>state</code> (los datos: un ticket, una función o una PR) y <code>questions</code>. Cobra solo los tokens de entrada: $0.042 por millón.</p>
+  <table>
+    <thead><tr><th style="width:14%">Tipo</th><th>Qué devuelve</th><th style="width:34%">Ejemplo en la demo</th></tr></thead>
+    <tbody>
+      <tr><td class="k">choice</td><td>Una opción de una lista cerrada, su confianza y la probabilidad de cada opción</td><td>Prioridad: critica / alta / media / baja</td></tr>
+      <tr><td class="k">noul</td><td>Una probabilidad de 0 a 1 de que algo sea verdad (sí/no)</td><td>¿Necesita a un humano? ¿Se traga errores?</td></tr>
+      <tr><td class="k">score</td><td>Un valor en una escala ordenada (0 a N) con su leyenda</td><td>Severidad de 0 (limpia) a 3 (cobros incorrectos)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Anatomía de un prompt a Jev</h2>
+  <p>Con un LLM escribes un prompt de texto libre y lees texto libre. Con Jev el "prompt" es estructurado y tiene tres partes:</p>
+  <ul>
+    <li><code>state</code>: los datos sobre los que se decide (un ticket, una función o una PR) como JSON. Solo hechos, nunca instrucciones.</li>
+    <li><code>instructions</code>: la pregunta, en una frase. Debe decir qué juzgar y, si hace falta, qué <i>no</i> juzgar ("el impacto de negocio, no lo alarmante del texto").</li>
+    <li><code>criteria</code>: las opciones posibles, cada una con una descripción concreta. Es la parte que más pesa: Jev compara el <code>state</code> contra cada descripción. Las descripciones vagas dan probabilidades repartidas y confianzas bajas; con ejemplos concretos ("cobros duplicados", "un navegador") la confianza sube.</li>
+  </ul>
+  <p>Cómo se lee la respuesta:</p>
+  <ul>
+    <li><b>choice</b> devuelve <code>choice</code> (la opción ganadora), <code>probabilities</code> (una por opción, suman 1) y <code>confidence</code> (qué tan segura está Jev de la ganadora). Cuando dos opciones están parejas la confianza baja aunque una gane: en la demo 3, PR-15 dio alta 37 % frente a media 35 % y confianza 6 %.</li>
+    <li><b>noul</b> devuelve un solo número de 0 a 1: la probabilidad de que la afirmación sea cierta (0.97 = "casi seguro que sí").</li>
+    <li><b>score</b> devuelve <code>score</code>, el promedio ponderado de la escala: con probabilidades 2 % / 2 % / 59 % / 37 % para 0, 1, 2 y 3, el score es 2.3.</li>
+  </ul>
+  <div class="call"><b>La regla de oro de la demo:</b> Jev nunca "decide la acción". Devuelve probabilidades; tu código, con umbrales escritos y versionados, decide qué hacer. Si Jev clasifica mal, se afinan las descripciones de los <i>criteria</i>, no los umbrales.</div>
+  <p class="note">En la sección de cada demo está el texto exacto de cada pregunta y de cada opción. Las opciones se llaman <i>criteria</i>: son lo único que se afina cuando Jev clasifica mal. Los umbrales no se tocan para "hacer que salga".</p>
+</section>
+
+<!-- 2. Antes de la sesión -->
+<section class="page">
+  <h1>2. Antes de la sesión</h1>
+  <p>Ya está todo limpio desde el ensayo del 7 de octubre. Si después ensayas otra vez, repite lo que dice "Si ensayaste".</p>
+  <h2>Checklist del día</h2>
+  <ol>
+    <li>Abre una terminal y entra a la demo: <code>cd ~/Documents/lidr/eventojev/jev-dev-demo &amp;&amp; claude</code>. Los skills <code>/triage</code>, <code>/pre-vuelo</code> y <code>/costos</code> solo existen si Claude Code se abre <b>dentro de esta carpeta</b>.</li>
+    <li>En Claude Code: <code>/mcp</code> → <b>atlassian</b> → autentícate. Sin esto, <code>/triage</code> no puede crear el issue.</li>
+    <li>Comprueba que todo responde: <code>npm test</code> (14 en verde). Si quieres probar Jev sin tocar nada: <code>npm run scan -- --ticket=T03</code> y luego borra <code>results/code-health.json</code>.</li>
+    <li>Comprueba que <code>results/</code> solo tiene los tres "antes" ya calculados: <code>triage-direct.json</code> (demo 1), <code>code-health-direct.json</code> (demo 2) y <code>direct.json</code> (demo 3).</li>
+    <li>Abre en el navegador, en pestañas: el tablero de KAN en Jira, el ticket <b>KAN-223</b> (T03, para el minuto 10), la lista de PRs del fork y VS Code con la carpeta jev-dev-demo.</li>
+    <li>En VS Code deja a mano: <code>shared/thresholds.ts</code> (min 2), <code>../medusa-fork/packages/modules/payment/src/services/payment-module.ts</code> (min 10) y <code>llm-router/router.ts</code> (min 19).</li>
+    <li>Ten el celular con hotspot listo por si falla la red del lugar.</li>
+  </ol>
+  <h2>Estado esperado al empezar</h2>
+  <table>
+    <thead><tr><th style="width:30%">Dónde</th><th>Cómo debe estar</th></tr></thead>
+    <tbody>
+      <tr><td>Jira · KAN</td><td>30 tickets con etiqueta <b>batch</b>, de <b>KAN-221</b> a <b>KAN-250</b>: 8 en Finalizada ("sprint anterior") y 22 sin clasificar. Ninguno con etiqueta jev ni comentario de Jev.</td></tr>
+      <tr><td>GitHub · LIDR-academy/medusa</td><td>20 PRs abiertas, <b>sin comentarios</b> del router.</td></tr>
+      <tr><td>jev-dev-demo/results/</td><td>Solo los tres "antes": <code>triage-direct.json</code>, <code>code-health-direct.json</code> y <code>direct.json</code>.</td></tr>
+      <tr><td>medusa-fork</td><td>En el commit <code>d436d2fb</code>. Si actualizas el fork, vuelve a correr el pre-vuelo y confirma la marca de <code>roundToCurrencyPrecision</code>.</td></tr>
+      <tr><td>.env</td><td><code>CLAUDE_ENGINE=cli</code> (Claude con tu sesión de Claude Code; la API de Anthropic no tiene saldo) y <code>JIRA_PROJECT_KEY=KAN</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Keys de Jira</h2>
+  <p>Jira no reutiliza números: cada <code>reset</code> + <code>seed</code> crea keys nuevas. Estas son las del 7 de octubre. La key es siempre <b>KAN-(220 + número del ticket)</b>.</p>
+  <table>
+    <thead><tr><th style="width:30%">Ticket</th><th style="width:16%">Key</th><th>Dónde se usa</th></tr></thead>
+    <tbody>
+      <tr><td>T01 a T30 (los 30 sembrados)</td><td><b>KAN-221 a KAN-250</b></td><td>Tablero del minuto 0 y <code>batch</code> del minuto 6</td></tr>
+      <tr><td>T03 "Reembolso parcial se registra como total"</td><td><b>KAN-223</b></td><td>Demo 2, minuto 10</td></tr>
+      <tr><td>T28, T29, T30 (los 3 ambiguos)</td><td><b>KAN-248, 249, 250</b></td><td>Filtro <code>labels = escalado</code>, minuto 8</td></tr>
+      <tr><td>T20 a T27 (los 8 en Finalizada)</td><td><b>KAN-240 a KAN-247</b></td><td>Contexto del tablero</td></tr>
+      <tr><td>El que crea <code>/triage</code> en vivo</td><td><b>KAN-251</b></td><td>Minutos 3 y 5. Es el siguiente número libre: si creas otro issue antes de la sesión, será otro.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="page">
+  <h2>Si ensayaste, o después de la sesión: cómo dejarlo limpio</h2>
+  <table>
+    <thead><tr><th style="width:4%">#</th><th style="width:13%">Dónde</th><th style="width:31%">Qué haces / escribes</th><th style="width:28%">Qué debe aparecer</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1</td><td class="k">Terminal</td><td><code>npm run reset</code></td><td>Borra los issues de la demo en KAN (etiquetas jev, batch, revisar, escalado) y vacía results/, <b>salvo los tres "antes"</b>.</td><td></td></tr>
+      <tr><td class="k">2</td><td class="k">Terminal</td><td><code>npm run seed -- --done=8</code></td><td>30 tickets nuevos, 8 a Finalizada. <b>Con keys nuevas:</b> actualiza la tabla "Keys de Jira".</td><td></td></tr>
+      <tr><td class="k">3</td><td class="k">Claude Code</td><td>Pide: "borra los comentarios del router en las PRs de LIDR-academy/medusa".</td><td>0 comentarios en las 20 PRs.</td><td></td></tr>
+      <tr><td class="k">4</td><td class="k">Terminal</td><td>Solo si los borraste con <code>npm run reset -- --baselines</code>:<br><code>npm run batch -- --mode=direct</code><br><code>npm run scan -- --ticket=T03 --mode=direct</code><br><code>npm run review -- --mode=direct --data=data/prs-fork.json</code></td><td>Los tres "antes" de nuevo (~2 min en total). El de la demo 1 lee los 22 issues nuevos de KAN.</td><td></td></tr>
+    </tbody>
+  </table>
+  <div class="call warn"><b>Ojo:</b> si en el ensayo usaste <code>--comment</code>, los comentarios del router quedan en las 20 PRs del fork. Hay que borrarlos antes de la sesión (pídeselo a Claude Code). <code>npm run reset</code> solo toca Jira y <code>results/</code>.</div>
+</section>
+
+<!-- 3. Minuto a minuto -->
+<section class="page">
+  <h1>3. Minuto a minuto</h1>
+  <table>
+    <thead><tr><th style="width:6%">Min</th><th style="width:46%">Acción / comando</th><th>Qué se ve y qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">0</td><td>Jira: tablero de KAN</td><td>30 tickets (KAN-221 a KAN-250), 8 en Finalizada, 22 sin clasificar. "Esto ve un manager cada lunes."</td></tr>
+      <tr><td class="k">2</td><td>VS Code: <code>shared/thresholds.ts</code></td><td>Los umbrales son código tuyo, no del modelo.</td></tr>
+      <tr><td class="k">3</td><td>Claude Code: <code>/triage Pagué con débito y me llegaron dos cargos por el mismo pedido</code></td><td>Claude crea KAN-251 con el MCP; Jev lo clasifica: bug / crítica / pagos → apply.</td></tr>
+      <tr><td class="k">5</td><td>Abrir KAN-251 en Jira</td><td>Comentario de Jev con las tres decisiones y su porcentaje.</td></tr>
+      <tr><td class="k">6</td><td><code>npm run batch -- --no-create</code></td><td>22 tickets clasificados en ~2 s, tabla y costo de una fracción de centavo.</td></tr>
+      <tr><td class="k">8</td><td>Filtro en Jira <code>labels = escalado</code></td><td>Los 3 ambiguos (KAN-248, 249, 250) escalados a una persona. (Los marcados para revisión llevan otra etiqueta: revisar.)</td></tr>
+      <tr><td class="k">10</td><td><b>Demo 2.</b> KAN-223 (T03) en Jira + <code>payment-module.ts</code> de Medusa en VS Code</td><td>"Esto es Medusa real, 1,468 líneas. Antes de tocarlo, ¿dónde están los problemas?"</td></tr>
+      <tr><td class="k">11</td><td><code>npm run scan -- --ticket=T03</code></td><td>58 funciones en ~2 s: 1 o 2 marcadas, el resto limpias.</td></tr>
+      <tr><td class="k">13</td><td><code>npm run scan -- --ticket=T03 --explain</code> (o <code>/pre-vuelo T03</code>)</td><td>Claude explica solo lo marcado: el catch vacío de roundToCurrencyPrecision. Reutiliza lo que Jev dijo en el min 11: mismos números, ~7 s.</td></tr>
+      <tr><td class="k">15</td><td>El <code>node -e</code> de JPY (demo 2)</td><td>JPY → TypeError: el bug que el catch esconde, en vivo.</td></tr>
+      <tr><td class="k">16</td><td>Señalas las funciones limpias</td><td>"Estas no gastaron un token."</td></tr>
+      <tr><td class="k">17</td><td><code>npm run costs -- --demo=1,2</code></td><td>Antes y después de las demos 1 y 2: triage $0.078 → $0.0009; pre-vuelo $0.235 → $0.022. Sin --demo saldría ya el direct de la demo 3.</td></tr>
+      <tr><td class="k">18</td><td><b>Demo 3.</b> PRs del fork en el navegador + <code>npm run costs</code></td><td>20 PRs reales. La fila direct: todo a Sonnet, tantos tokens, tanto costo.</td></tr>
+      <tr><td class="k">19</td><td>VS Code: <code>llm-router/router.ts</code></td><td>Una pregunta, tres caminos.</td></tr>
+      <tr><td class="k">20</td><td><code>npm run review -- --mode=jev --data=data/prs-fork.json --comment</code></td><td>Cada PR con su ruta; los comentarios aparecen en GitHub.</td></tr>
+      <tr><td class="k">23</td><td><code>npm run compare</code></td><td>Tabla lado a lado. Silencio. Luego el número.</td></tr>
+      <tr><td class="k">25</td><td><code>npm run show-review -- PR-12</code></td><td>La PR de pagos recibió la misma revisión en ambos modos.</td></tr>
+      <tr><td class="k">26</td><td><b>Cierre.</b> <code>npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json --out=results/cierre.json --concurrency=6</code></td><td>Un plugin de Claude Code que usa Jev, revisado por un router que usa Jev. ~30 s: habla mientras corre.</td></tr>
+      <tr><td class="k">28</td><td>Patrón en una diapositiva</td><td>"En la demo 2 nadie sabía que ese bug estaba en Medusa; Jev señaló una función de 58 y ahí estaba." · "Jev no escribe, Jev elige."</td></tr>
+      <tr><td class="k">29</td><td><code>npm run costs</code> final (o <code>/costos</code>)</td><td>Lo que costó toda la demo, con el cierre en su propia fila.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- DEMO 1 -->
+<section class="page">
+  <div class="banner b1"><div class="tag">DEMO 1</div><div class="txt"><b>Triage del backlog de Jira</b><span>Minutos 0–10 · Qué tipo, prioridad y equipo tiene cada ticket, y cuáles necesitan a una persona</span></div></div>
+  <h3>Qué se cuenta</h3>
+  <p>Un backlog desordenado: 30 tickets de una tienda en línea. Ocho ya están resueltos (dan sensación de proyecto vivo) y 22 llegan sin tipo, prioridad ni equipo. Jev los clasifica en paralelo en un par de segundos; tu código decide si aplica directo, aplica y marca para revisión, o escala a una persona. Antes, en vivo, Claude Code crea un ticket nuevo a partir de una queja de cliente y Jev lo clasifica al instante.</p>
+  <h3>Secuencia de pasos</h3>
+  <table class="d1">
+    <thead><tr><th style="width:4%">#</th><th style="width:12%">Dónde</th><th style="width:28%">Qué haces / escribes</th><th style="width:30%">Qué debe aparecer</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1</td><td class="k">Jira</td><td>Abre el tablero de KAN.</td><td>30 tickets (KAN-221 a KAN-250): 22 en Tareas por hacer, 8 en Finalizada. Ninguno con tipo ni prioridad.</td><td class="say">"Esto ve un manager cada lunes: 22 tickets sin tipo, prioridad ni dueño."</td></tr>
+      <tr><td class="k">2</td><td class="k">VS Code</td><td>Abre <code>shared/thresholds.ts</code>.</td><td><code>apply 0.7 · flag 0.5 · needsHuman 0.5</code></td><td class="say">"Estos números son míos, no del modelo. Jev da probabilidades; mi código decide."</td></tr>
+      <tr><td class="k">3</td><td class="k">Claude Code</td><td><code>/triage Pagué con débito y me llegaron dos cargos por el mismo pedido</code></td><td>Claude crea KAN-251 con el MCP y muestra la tabla: bug / crítica / pagos → apply, en ~2 s.</td><td class="say">"Claude escribe el ticket. Jev lo clasifica en milisegundos."</td></tr>
+      <tr><td class="k">4</td><td class="k">Jira</td><td>Abre KAN-251, el ticket recién creado.</td><td>Tipo Error, prioridad Highest, etiqueta jev y un comentario de Jev con cada decisión y su %.</td><td class="say">"Cada decisión viene con su probabilidad: se puede auditar."</td></tr>
+      <tr><td class="k">5</td><td class="k">Terminal</td><td><code>npm run batch -- --no-create</code></td><td>22 filas en ~2 s. Acciones: ~16 apply · ~3 apply_and_flag · 3 escalate. Costo de una fracción de centavo.</td><td class="say">"22 tickets en dos segundos por menos de un décimo de centavo."</td></tr>
+      <tr><td class="k">6</td><td class="k">Jira</td><td>Filtra <code>labels = escalado</code>.</td><td>3 tickets: KAN-248 "No funciona", KAN-249 "Cambiar el color del botón de pagar y arreglar…", KAN-250 "¿Esto es normal?".</td><td class="say">"Lo que Jev no sabe, no lo inventa: se lo pasa a una persona."</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Qué se le pregunta a Jev (4 preguntas por ticket, una sola llamada)</h3>
+  <p class="note">Archivo: <code>jira-triage/classify.ts</code>. El <code>state</code> que recibe Jev es <code>{ title, description, reporter }</code>. Las instrucciones de prioridad están en inglés porque ahí Jev rinde mejor; las afinamos en el ensayo.</p>
+  <table class="q">
+    <tr class="head"><td>tipo <b class="t-d1">choice</b></td><td>¿Qué tipo de issue es?</td></tr>
+    <tr><td>bug</td><td>Algo que antes funcionaba y ahora falla</td></tr>
+    <tr><td>feature</td><td>Funcionalidad nueva solicitada</td></tr>
+    <tr><td>deuda_tecnica</td><td>Refactor, limpieza, dependencias, pruebas automatizadas, cumplimiento o mejora interna sin cambio visible para el cliente</td></tr>
+    <tr><td>soporte</td><td>Pregunta o duda de uso, sin cambio de código</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>prioridad <b class="t-d1">choice</b></td><td>What priority does this ticket deserve? Judge the business impact today, not how alarming the wording sounds.</td></tr>
+    <tr><td>critica</td><td>Money or orders are wrong or blocked right now in production: payments fail for a whole card brand, customers are charged twice, discounts or orders are duplicated. Must be fixed today.</td></tr>
+    <tr><td>alta</td><td>Important but not losing money right now: a key flow broken for one segment (e.g. login on one browser, sessions expiring), security vulnerabilities, legal or tax obligations, or work that protects or unlocks revenue (new payment methods, test coverage of checkout).</td></tr>
+    <tr><td>media</td><td>Annoying but with a workaround or limited reach: slow reports, layout glitches on one device, search or export edge cases, delayed notifications, internal refactors, search that misses some results, new dashboards, or new customer-facing pages and buttons that are useful but not urgent.</td></tr>
+    <tr><td>baja</td><td>Cosmetic, a how-to question, or a nice-to-have with little impact: dark mode, slightly blurry images on some screens, questions about how to use the product.</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>equipo <b class="t-d1">choice</b></td><td>¿Qué equipo debe atenderlo?</td></tr>
+    <tr><td>pagos</td><td>Checkout, pasarelas, tarjetas, cupones, facturación, reembolsos</td></tr>
+    <tr><td>plataforma</td><td>Infra, autenticación, sesiones, APIs internas, colas, notificaciones, rendimiento</td></tr>
+    <tr><td>frontend</td><td>UI web o móvil, estilos, imágenes, navegación, páginas o botones nuevos que ve el cliente</td></tr>
+    <tr><td>datos</td><td>Reportes, métricas, búsqueda, exportaciones, pipelines</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>needs_human <b class="t-d1">noul</b></td><td>¿El ticket es demasiado ambiguo o contradictorio para clasificarlo sin una persona?</td></tr>
+    <tr><td>true</td><td>Falta información clave, está vacío o pide dos cosas distintas</td></tr>
+    <tr><td>false</td><td>Tiene suficiente detalle para decidir</td></tr>
+  </table>
+
+  <h3>La petición completa a Jev (ticket T01, real)</h3>
+  <p class="note">Una sola llamada por ticket con las 4 preguntas. Aquí va la primera completa; las otras van igual, con los textos de las tablas de arriba.</p>
+<pre>{
+  "model": "jev-1.13.0",
+  "state": {
+    "title": "El checkout falla con tarjetas Amex en producción",
+    "description": "Desde ayer los clientes con American Express ven un error 500 al confirmar el pago. Visa y Mastercard funcionan normal. Afecta a todos los usuarios con Amex.",
+    "reporter": "soporte"
+  },
+  "questions": {
+    "tipo": {
+      "type": "choice",
+      "instructions": "¿Qué tipo de issue es?",
+      "criteria": {
+        "bug": "Algo que antes funcionaba y ahora falla",
+        "feature": "Funcionalidad nueva solicitada",
+        "deuda_tecnica": "Refactor, limpieza, dependencias, pruebas automatizadas, …",
+        "soporte": "Pregunta o duda de uso, sin cambio de código"
+      }
+    },
+    "prioridad": "{ type: choice, instructions: \"What priority…\", criteria: {critica, alta, media, baja} }",
+    "equipo": "{ type: choice, … }",
+    "needs_human": "{ type: noul, … }"
+  }
+}</pre>
+  <h3>La respuesta real de Jev</h3>
+<pre>{
+  "answers": {
+    "tipo": {"type": "choice", "choice": "bug", "confidence": 1, "probabilities": {"deuda_tecnica": 0, "bug": 1, "feature": 0, "soporte": 0}},
+    "prioridad": {"type": "choice", "choice": "critica", "confidence": 0.99, "probabilities": {"alta": 0.01, "baja": 0, "critica": 0.99, "media": 0}},
+    "equipo": {"type": "choice", "choice": "pagos", "confidence": 1, "probabilities": {"frontend": 0, "pagos": 1, "datos": 0, "plataforma": 0}},
+    "needs_human": {"type": "noul", "noul": 0.17}
+  }
+}</pre>
+  <p class="note">Lectura: bug 100 %, crítica 99 %, pagos 100 % y 17 % de que necesite humano. La confianza mínima es 0.99 ≥ 0.70 y el humano 0.17 &lt; 0.50, así que tu código aplica directo (apply).</p>
+
+  <h3>Por qué cada pregunta</h3>
+  <table class="d1">
+    <thead><tr><th style="width:16%">Pregunta</th><th style="width:26%">Para qué sirve</th><th style="width:30%">Por qué está redactada así</th><th>Qué hace tu código con la respuesta</th></tr></thead>
+    <tbody>
+      <tr><td><code>tipo</code></td><td>Que el ticket entre al tablero con el tipo correcto (Error, Historia, Tarea).</td><td>Cuatro opciones excluyentes con una definición operativa cada una ("antes funcionaba y ahora falla"), no etiquetas sueltas.</td><td>Lo mapea a Error / Historia / Tarea y lo escribe en Jira si la acción no es escalate.</td></tr>
+      <tr><td><code>prioridad</code></td><td>Ordenar el backlog por impacto real, que es lo que hace un manager cada lunes.</td><td>En inglés y con ejemplos concretos por nivel. La primera versión, vaga y en español, daba "alta" a casi todo con poca confianza y escalaba 15 tickets.</td><td>Highest / High / Medium / Low en Jira. Su confianza suele ser la más baja de las tres, así que es la que más decide la acción.</td></tr>
+      <tr><td><code>equipo</code></td><td>Saber a quién le toca, y asignarlo al líder del equipo si está configurado.</td><td>Cada equipo descrito por los temas que atiende; tras el ensayo se agregó "páginas o botones nuevos" a frontend.</td><td>Va en el comentario de Jev (KAN no tiene campo de equipo) y elige el líder en LEAD_*.</td></tr>
+      <tr><td><code>needs_human</code></td><td>Detectar tickets que ninguna clasificación arregla: vacíos, contradictorios o que piden dos cosas.</td><td>Es noul (sí/no) porque es una alarma, no una categoría; las opciones dicen qué cuenta como ambiguo.</td><td>Si ≥ 0.50 escala aunque las otras confianzas sean altas: es el freno de mano.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Qué decide tu código</h3>
+  <p>En <code>shared/thresholds.ts</code>, con la confianza <b>mínima</b> de las tres respuestas (tipo, prioridad, equipo):</p>
+<pre>si needs_human ≥ 0.50        → escalate         (no aplica nada; etiqueta "escalado")
+si confianza mínima ≥ 0.70   → apply            (escribe tipo, prioridad y comentario)
+si confianza mínima ≥ 0.50   → apply_and_flag   (escribe y etiqueta "revisar")
+si no                        → escalate         (etiqueta "escalado")</pre>
+  <p class="note">Mapeo a Jira (proyecto en español), en <code>jira-triage/jira.ts</code>: bug → Error, feature → Historia, deuda técnica y soporte → Tarea; crítica → Highest, alta → High, media → Medium, baja → Low. El equipo va en el comentario (KAN no tiene un campo "Equipo" de lista).</p>
+
+  <h3>Qué le pide el skill /triage a Claude</h3>
+  <p>Archivo: <code>.claude/skills/triage/SKILL.md</code>. Resumen de las instrucciones:</p>
+  <ul>
+    <li>Del texto del usuario, sacar uno o varios issues (uno por problema), con resumen corto en español y la queja del cliente en la descripción, sin inventar datos.</li>
+    <li>Crearlos con el MCP de Atlassian en KAN, tipo Tarea, <b>sin prioridad ni etiquetas</b>: la clasificación la pone Jev, no Claude. Nunca con la etiqueta batch.</li>
+    <li>Correr <code>npm run triage -- &lt;KEY&gt;</code> y no clasificar por su cuenta; si el script falla, mostrar el error y detenerse.</li>
+    <li>Mostrar la tabla tal cual, una línea por issue con la decisión, y cerrar con el tiempo y el costo de Jev.</li>
+  </ul>
+
+  <h3>El antes: el mismo triage con Sonnet</h3>
+  <p><code>npm run batch -- --mode=direct</code> es lo que se hace hoy con IA: un prompt a Sonnet por ticket que pide la clasificación en JSON. Lee los mismos 22 issues reales de KAN (solo lectura, no escribe nada en Jira) y se corre una vez antes de la sesión; queda en <code>results/triage-direct.json</code>.</p>
+  <ul>
+    <li><b>El prompt</b> (<code>directTicketPrompt</code> en <code>jira-triage/classify.ts</code>) se arma con los mismos textos que las preguntas a Jev: las cuatro instrucciones y cada opción con su descripción, sacadas de <code>TICKET_QUESTIONS</code>. Así la comparación es justa: mismas reglas, distinto modelo.</li>
+    <li><b>La respuesta</b> se valida en <code>parseDirectTicket</code>: si el JSON no viene o trae una opción que no existe, es error y el ticket se escala. Jev nunca tiene ese problema: siempre elige una de las opciones dadas.</li>
+    <li><b>Lo que decide tu código</b>: Sonnet no da probabilidades, así que no hay umbral que aplicar. Solo quedan dos acciones, aplicar o escalar si el propio LLM dice que necesita humano. No existe "aplicar y marcar para revisión".</li>
+  </ul>
+<pre>Clasifica este ticket de soporte de una tienda en línea. Responde SOLO con un objeto JSON, sin texto antes ni después:
+{"tipo": "...", "prioridad": "...", "equipo": "...", "needs_human": true|false}
+
+tipo — ¿Qué tipo de issue es?
+  - bug: Algo que antes funcionaba y ahora falla
+  - feature: …            (las mismas opciones de las tablas de arriba)
+prioridad — What priority does this ticket deserve? …
+equipo — ¿Qué equipo debe atenderlo? …
+needs_human — ¿El ticket es demasiado ambiguo o contradictorio …?
+
+Ticket:
+Título: &lt;summary del issue en Jira&gt;
+Descripción: &lt;description del issue en Jira&gt;</pre>
+  <table class="d1">
+    <thead><tr><th style="width:18%"></th><th style="width:27%">Antes: Sonnet</th><th style="width:27%">Después: Jev</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Costo (22 tickets)</td><td>$0.078</td><td>$0.0009</td><td class="say" rowspan="4">"Los dos aciertan igual. Jev cuesta 87 veces menos, tarda 14 veces menos y además dice qué tan seguro está."</td></tr>
+      <tr><td class="k">Tiempo</td><td>20 s</td><td>1.4 s</td></tr>
+      <tr><td class="k">Tipo y equipo correctos</td><td>19/19</td><td>19/19</td></tr>
+      <tr><td class="k">Acciones</td><td>19 apply · 3 escalate</td><td>16 apply · 2 apply_and_flag · 4 escalate</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Si preguntan "¿entonces Sonnet es igual de bueno?": sí, en precisión. La diferencia es costo, tiempo y que Jev da una probabilidad por decisión, que es lo que permite a tu código distinguir "aplico", "aplico y que alguien revise" y "esto es para una persona".</p>
+
+  <h3>Resultados del ensayo (7 de octubre, servicios reales)</h3>
+  <table>
+    <thead><tr><th style="width:36%">Corrida</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>/triage (KAN-128, cobro duplicado)</td><td>bug 89 % · crítica 99 % · pagos 100 % · humano 17 % → <b>apply</b>. Jev en 210 ms, 956 tokens.</td></tr>
+      <tr><td><code>batch --no-create</code> (22 tickets)</td><td>16 apply · 3 apply_and_flag · <b>3 escalate</b> (justo T28, T29, T30). Tipo y equipo 19/19 contra lo esperado. 1.8 s, 20,541 tokens, $0.0021.</td></tr>
+    </tbody>
+  </table>
+  <h3>Si algo falla</h3>
+  <ul>
+    <li><b>/triage no crea el issue:</b> el MCP no está autenticado → <code>/mcp</code> → atlassian. Plan B: crea el issue a mano en Jira y corre <code>npm run triage -- KAN-251</code> (o la key que te dé Jira).</li>
+    <li><b>Jira no responde:</b> <code>JIRA_MOCK=1 npm run batch</code> clasifica con Jev real sin tocar Jira (crea keys falsas).</li>
+    <li><b>Sin red:</b> <code>npm run batch -- --mock</code> (Jev y Jira simulados; se ve en amarillo como MOCK).</li>
+  </ul>
+</section>
+
+<!-- DEMO 2 -->
+<section class="page">
+  <div class="banner b2"><div class="tag">DEMO 2</div><div class="txt"><b>Pre-vuelo sobre Medusa real</b><span>Minutos 10–18 · Antes de tocar código para un ticket, ¿qué problemas ya hay ahí?</span></div></div>
+  <h3>Qué se cuenta</h3>
+  <p>El ticket T03 de la demo 1 (KAN-223, "Reembolso parcial se registra como total") obliga a tocar el código de pagos de <b>Medusa</b>, un e-commerce open source real. Son dos archivos de producción con 58 funciones. Mandarlas todas a Claude sería caro y lento. Jev las revisa todas en paralelo en ~2 segundos, marca solo las sospechosas y Claude explica únicamente esas. En el ensayo, la que Jev marcó resultó ser un bug latente real.</p>
+  <h3>Secuencia de pasos</h3>
+  <table class="d2">
+    <thead><tr><th style="width:4%">#</th><th style="width:12%">Dónde</th><th style="width:28%">Qué haces / escribes</th><th style="width:28%">Qué debe aparecer</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1</td><td class="k">Jira</td><td>Abre <b>KAN-223</b>, "Reembolso parcial se registra como total" (T03).</td><td>Ya clasificado en la demo 1: bug, pagos.</td><td class="say">"Este ticket me toca. Antes de tocar el código, ¿qué hay ahí?"</td></tr>
+      <tr><td class="k">2</td><td class="k">VS Code</td><td>Abre <code>medusa-fork/packages/modules/payment/src/services/payment-module.ts</code>.</td><td>1,468 líneas de código real.</td><td class="say">"Esto es Medusa, un e-commerce open source real. No sembramos nada."</td></tr>
+      <tr><td class="k">3</td><td class="k">Terminal</td><td><code>npm run scan -- --ticket=T03</code></td><td>58 funciones en ~1 s. 1 o 2 marcadas por traga_errores (siempre roundToCurrencyPrecision). ~$0.003.</td><td class="say">"Jev revisó 58 funciones en un segundo y señaló dónde mirar."</td></tr>
+      <tr><td class="k">4</td><td class="k">Terminal o Claude Code</td><td><code>npm run scan -- --ticket=T03 --explain</code> o <code>/pre-vuelo T03</code></td><td>La misma tabla (reutiliza a Jev) y la explicación de Claude solo de lo marcado, en ~7 s.</td><td class="say">"Claude solo leyó lo que Jev marcó. Las demás no gastaron un token."</td></tr>
+      <tr><td class="k">5</td><td class="k">VS Code</td><td>Ve a <code>roundToCurrencyPrecision</code> (línea 161 de payment-module.ts).</td><td>Un <code>try</code> con <code>split(".")[1]</code> y un <code>catch {}</code> vacío.</td><td class="say">"Un catch vacío: si algo falla, nadie se entera."</td></tr>
+      <tr><td class="k">6</td><td class="k">Terminal</td><td>Pega el node -e de JPY (abajo en esta sección).</td><td>USD 2 decimales · JPY → TypeError (el catch de Medusa lo esconde).</td><td class="say">"Con yenes, el monto se queda sin redondear y el sistema dice que todo bien."</td></tr>
+      <tr><td class="k">7</td><td class="k">Terminal</td><td><code>npm run costs -- --demo=1,2</code></td><td>Demo 1 y demo 2: unos 2 centavos en total.</td><td class="say">"Todo lo que llevamos costó dos centavos."</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Los archivos que escanea</h3>
+  <table>
+    <thead><tr><th>Archivo (dentro de medusa-fork)</th><th style="width:24%">Funciones</th></tr></thead>
+    <tbody>
+      <tr><td><code>packages/modules/payment/src/services/payment-module.ts</code></td><td>34 (el servicio de pagos)</td></tr>
+      <tr><td><code>packages/modules/providers/payment-stripe/src/core/stripe-base.ts</code></td><td>24 (el proveedor de Stripe)</td></tr>
+    </tbody>
+  </table>
+  <p class="note">La ruta sale de <code>MEDUSA_PATH</code> en <code>.env</code> (por defecto <code>../medusa-fork</code>). Si falta el clon, el comando dice cómo clonarlo.</p>
+
+  <h3>Qué se le pregunta a Jev (6 preguntas por función, una sola llamada)</h3>
+  <p class="note">Archivo: <code>code-health/scan.ts</code>. El <code>state</code> lleva: archivo, nombre de la función, líneas, parámetros, señales baratas (awaits, catch sospechoso, literales…), las funciones parecidas (<code>similar_to</code>) y el código fuente (hasta 6,000 caracteres). Una señal cuenta como marca si su probabilidad es ≥ <code>SCAN_THRESHOLD</code> (0.60).</p>
+  <table class="q">
+    <tr class="head"><td>responsabilidades <b class="t-d2">choice</b></td><td>How many unrelated responsibilities does this function have? (single responsibility principle) Judge reasons to change, not number of steps.</td></tr>
+    <tr><td>una</td><td>One job, even with several steps: validating input, calling one service or repository, and mapping or returning the result is ONE responsibility (orchestration). Thin wrappers, delegations to a provider and transactional wrappers also count as one.</td></tr>
+    <tr><td>varias</td><td>Mixes concerns that change for different reasons in the same body: e.g. computes money AND sends an email AND writes audit logs or metrics AND changes order status, or business rules mixed with formatting of notifications.</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>traga_errores <b class="t-d2">noul</b></td><td>¿Captura un error y lo oculta devolviendo éxito o un valor inventado, en vez de propagarlo o reportarlo?</td></tr>
+    <tr><td>true</td><td>Hay un catch que devuelve ok/true, un id falso o un valor por defecto como si nada hubiera pasado</td></tr>
+    <tr><td>false</td><td>Los errores se propagan, se devuelven como error o se registran de forma explícita</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>muta_entrada <b class="t-d2">noul</b></td><td>¿Modifica directamente un objeto o arreglo que recibió como parámetro?</td></tr>
+    <tr><td>true</td><td>Asigna propiedades o hace push sobre un parámetro; quien llamó ve el cambio</td></tr>
+    <tr><td>false</td><td>Trabaja sobre copias o devuelve valores nuevos</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>numero_magico <b class="t-d2">noul</b></td><td>¿Usa números literales con significado de negocio sin nombre (tasas, umbrales, porcentajes)?</td></tr>
+    <tr><td>true</td><td>Aparecen literales como 0.16, 1.16, 0.9 que representan impuestos, umbrales o reglas de negocio</td></tr>
+    <tr><td>false</td><td>Los números están nombrados como constantes o son triviales (0, 1, 100 para redondear)</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>logica_duplicada <b class="t-d2">noul</b></td><td>Considerando las funciones similares listadas en similar_to, ¿duplica lógica que ya existe en otra función, con variaciones sutiles?</td></tr>
+    <tr><td>true</td><td>Reimplementa el mismo cálculo o regla de negocio que otra función listada, pero con fórmula, redondeo o condición distinta</td></tr>
+    <tr><td>false</td><td>No hay función similar, o la similitud es estructural: un método público que delega en su versión privada (create/create_), varios métodos que llaman al mismo proveedor con distinto método, o CRUD con la misma forma</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>severidad <b class="t-d2">score</b></td><td>Si un desarrollador toca esta función para la tarea, ¿qué tan probable es que los problemas detectados causen un bug en producción?</td></tr>
+    <tr><td>0</td><td>Ninguno: la función está limpia</td></tr>
+    <tr><td>1</td><td>Bajo: deuda de estilo, no afecta el comportamiento</td></tr>
+    <tr><td>2</td><td>Medio: puede producir resultados incorrectos en casos borde</td></tr>
+    <tr><td>3</td><td>Alto: produce cobros, estados o montos incorrectos en casos normales</td></tr>
+  </table>
+
+  <h3>La petición completa a Jev (roundToCurrencyPrecision, real)</h3>
+  <p class="note">Una llamada por función con las 6 preguntas; las 58 funciones se mandan en paralelo. Las señales baratas (signals) las calcula split.ts sin ningún modelo.</p>
+<pre>{
+  "model": "jev-1.13.0",
+  "state": {
+    "file": "packages/modules/payment/src/services/payment-module.ts",
+    "function": "roundToCurrencyPrecision",
+    "lines": 18,
+    "params": [
+      "amount",
+      "currencyCode"
+    ],
+    "signals": {
+      "lines": 18,
+      "awaits": 0,
+      "side_effect_kinds": 0,
+      "catch_swallow_hint": true,
+      "decimal_literals": [
+        "0.1111111"
+      ],
+      "mutated_params": [],
+      "max_nesting": 4,
+      "comment_sections": 0
+    },
+    "similar_to": [],
+    "source": "  protected roundToCurrencyPrecision(\n    amount: BigNumberInput,\n    currencyCode: string\n  ): BigNumberInput {\n    let precision: number | undefined = undefined\n    try {\n      const formatted = Intl.NumberFormat(undefined, {\n        style: \"currency\",\n      …"
+  },
+  "questions": {
+    "responsabilidades": {
+      "type": "choice",
+      "instructions": "How many unrelated responsibilities does this function have? …",
+      "criteria": {
+        "una": "One job, even with several steps: …",
+        "varias": "Mixes concerns that change for different reasons …"
+      }
+    },
+    "traga_errores": "{ type: noul, … }",
+    "muta_entrada": "{ type: noul, … }",
+    "numero_magico": "{ type: noul, … }",
+    "logica_duplicada": "{ type: noul, … }",
+    "severidad": "{ type: score, criteria: [Ninguno, Bajo, Medio, Alto] }"
+  }
+}</pre>
+  <h3>La respuesta real de Jev</h3>
+<pre>{
+  "answers": {
+    "responsabilidades": {"type": "choice", "choice": "una", "confidence": 0.92, "probabilities": {"una": 0.96, "varias": 0.04}},
+    "traga_errores": {"type": "noul", "noul": 0.84},
+    "muta_entrada": {"type": "noul", "noul": 0.07},
+    "numero_magico": {"type": "noul", "noul": 0.25},
+    "logica_duplicada": {"type": "noul", "noul": 0.05},
+    "severidad": {"type": "score", "score": 2.3, "confidence": 0.57, "probabilities": {"0": 0.02, "1": 0.02, "2": 0.59, "3": 0.37}}
+  }
+}</pre>
+  <p class="note">Lectura: una sola responsabilidad (96 %), pero <b>traga errores 84 %</b> ≥ 0.60 → marcada. Severidad 2.3, entre "medio" y "alto". Por eso pasa a Claude.</p>
+
+  <h3>Por qué cada pregunta</h3>
+  <table class="d2">
+    <thead><tr><th style="width:16%">Pregunta</th><th style="width:26%">Para qué sirve</th><th style="width:30%">Por qué está redactada así</th><th>Qué hace tu código con la respuesta</th></tr></thead>
+    <tbody>
+      <tr><td><code>responsabilidades</code></td><td>Detectar funciones que mezclan cosas que cambian por razones distintas: tocar una rompe la otra.</td><td>Pide juzgar "razones para cambiar, no número de pasos" y aclara que orquestar (validar → llamar → devolver) es una sola. Sin eso marcaba 21 de 58 en Medusa.</td><td>Marca si sale "varias" con confianza ≥ 0.60.</td></tr>
+      <tr><td><code>traga_errores</code></td><td>El bug más caro y más invisible: el error ocurre y el sistema dice que todo salió bien.</td><td>Describe la forma exacta: un catch que devuelve éxito, un id falso o un valor por defecto.</td><td>Marca si ≥ 0.60. Es la que encontró el bug de JPY.</td></tr>
+      <tr><td><code>muta_entrada</code></td><td>Efectos secundarios: quien llamó ve su objeto cambiado aunque la operación falle a medias.</td><td>Concreta: asignar propiedades o hacer push sobre un parámetro.</td><td>Marca si ≥ 0.60.</td></tr>
+      <tr><td><code>numero_magico</code></td><td>Reglas de negocio escondidas en literales (0.16 de IVA, 0.9 de umbral).</td><td>Separa los literales de negocio de los triviales (0, 1, 100 para redondear) para no hacer ruido.</td><td>Marca si ≥ 0.60.</td></tr>
+      <tr><td><code>logica_duplicada</code></td><td>La misma regla implementada dos veces con variaciones: centavos que no cuadran.</td><td>Jev recibe las funciones parecidas (similar_to); se aclara que delegar (create/create_) o CRUD con la misma forma no es duplicar.</td><td>Marca si ≥ 0.60.</td></tr>
+      <tr><td><code>severidad</code></td><td>Ordenar lo marcado: qué arreglar antes de empezar la tarea.</td><td>Escala de 4 niveles con consecuencias concretas ("cobros o montos incorrectos").</td><td>Ordena la tabla y colorea la columna Sev.; no decide si se marca.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>El prompt que recibe Claude (solo para las funciones marcadas)</h3>
+  <p class="note">Archivo: <code>code-health/explain.ts</code> · modelo <code>claude-sonnet-5-5</code> · máximo 500 tokens de salida.</p>
+<pre>Eres un revisor senior. Un modelo de decisiones marcó esta función con: &lt;señales y %&gt;.
+Un desarrollador va a tocar este archivo para la tarea: "&lt;título del ticket&gt;".
+En español y en máximo 150 palabras: 1) confirma o descarta cada señal con la línea concreta;
+2) di qué bug puede causar al hacer la tarea; 3) propón el refactor mínimo (nombres de funciones
+nuevas si aplica). Sin preámbulos.
+
+Archivo: &lt;ruta&gt;
+&lt;código de la función&gt;</pre>
+
+  <h3>Resultados del ensayo</h3>
+  <table>
+    <thead><tr><th style="width:26%">Función</th><th style="width:26%">Marca de Jev</th><th>Qué dijo Claude</th></tr></thead>
+    <tbody>
+      <tr><td><code>roundToCurrencyPrecision</code><br>payment-module.ts</td><td>traga_errores <b>~81 %</b> · severidad 2.2 · <b>sale siempre</b></td><td>Confirmada. El catch vacío esconde un TypeError: con monedas sin decimales (JPY) <code>split(".")[1]</code> no existe y el monto queda sin redondear. Se usa al calcular capturas. <b>Bug latente real.</b></td></tr>
+      <tr><td><code>refundPayment</code><br>stripe-base.ts</td><td>traga_errores ~60 % · <b>en el límite</b> (a veces entra, a veces no)</td><td>Parcialmente confirmada: se traga a propósito el error "ya reembolsado" y devuelve éxito, sin registro ni aviso.</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Totales del ensayo: 58 funciones · Jev ~1.8 s · ~82,000 tokens · $0.0034 · Claude 1 llamada · ~1,000 tokens de entrada / ~430 de salida.</p>
+
+  <h3>El antes: Claude revisa las 58 funciones</h3>
+  <p>Sin Jev no sabes qué funciones mirar, así que hay que mandarlas todas al LLM. <code>npm run scan -- --ticket=T03 --mode=direct</code> lo hace sobre el mismo código real de Medusa: una llamada a Sonnet por función, con el código completo. Se corre una vez antes de la sesión y queda en <code>results/code-health-direct.json</code>.</p>
+  <ul>
+    <li><b>El prompt</b> (<code>directReviewPrompt</code> en <code>code-health/explain.ts</code>) pide las mismas cinco señales que se le preguntan a Jev, con las mismas claves, y que la primera línea sea <code>MARCAS: traga_errores, …</code> o <code>MARCAS: ninguna</code>. Después, solo si marcó algo, la misma explicación que pide el modo con Jev.</li>
+    <li><b>La lectura</b> (<code>parseMarcas</code>) solo cuenta claves conocidas: si Claude inventa otra, se ignora. Así se puede contar cuántas marcó cada uno.</li>
+    <li><b>Lo que cambia</b>: con Jev, Claude solo lee las 2 funciones marcadas. Sin Jev, Claude lee las 58, y las 43 que resultan limpias también cuestan: hubo que leerlas para saberlo.</li>
+  </ul>
+<pre>Eres un revisor senior. Un desarrollador va a tocar este archivo para la tarea: "Reembolso parcial se registra como total".
+Revisa esta función buscando: varias_responsabilidades (…); traga_errores (…); muta_entrada (…); numero_magico (…); logica_duplicada (…).
+La primera línea de tu respuesta debe ser exactamente "MARCAS: " seguida de las claves que apliquen separadas por coma, o "MARCAS: ninguna".
+Después, solo si marcaste algo, en español y en máximo 150 palabras: 1) confirma cada señal con la línea concreta; 2) di qué bug puede causar
+al hacer la tarea; 3) propón el refactor mínimo. Sin preámbulos.
+
+Archivo: &lt;ruta&gt;
+&lt;código de la función&gt;</pre>
+  <table class="d2">
+    <thead><tr><th style="width:18%"></th><th style="width:27%">Antes: Sonnet lee todo</th><th style="width:27%">Después: Jev filtra, Claude explica</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Llamadas</td><td>58 a Sonnet</td><td>58 a Jev + 2 a Sonnet</td><td class="say" rowspan="4">"Claude marcó 15 y Jev 2. Las 2 de Jev están entre las 15, y una es el bug de JPY. Lo demás es ruido que alguien tendría que revisar."</td></tr>
+      <tr><td class="k">Costo</td><td>$0.235</td><td>$0.022</td></tr>
+      <tr><td class="k">Tiempo</td><td>42 s</td><td>~1 s Jev + ~11 s explicación</td></tr>
+      <tr><td class="k">Funciones marcadas</td><td>15 (entre ellas roundToCurrencyPrecision y refundPayment)</td><td>2: roundToCurrencyPrecision y refundPayment</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Honestidad: sin la lista de funciones parecidas que recibe Jev (<code>similar_to</code>), Claude marca "lógica duplicada" con más facilidad. Varias de sus 15 marcas son discutibles, no necesariamente falsas.</p>
+
+  <h3>El bug, en vivo (minuto 15)</h3>
+  <p>Es la misma lógica que usa Medusa en <code>roundToCurrencyPrecision</code>, en una línea:</p>
+<pre>node -e 'for (const c of ["USD","JPY"]) { try { console.log(c, Intl.NumberFormat(undefined,{style:"currency",currency:c}).format(0.1111111).split(".")[1].length, "decimales") } catch (e) { console.log(c, "→", e.constructor.name, "(el catch de Medusa lo esconde)") } }'
+
+USD 2 decimales
+JPY → TypeError (el catch de Medusa lo esconde)</pre>
+  <div class="call d2"><b>Qué decir si preguntan "¿y las demás?"</b> En el ensayo, Jev con criterios vagos marcaba 21 de 58 por "varias responsabilidades" y Claude descartaba casi todas. Se afinaron las descripciones de las opciones (no los umbrales) para que la orquestación normal cuente como una responsabilidad. Eso es justo el punto: las reglas de negocio viven en las opciones y en tu código, y se ajustan como cualquier código.</div>
+  <h3>Si algo falla</h3>
+  <ul>
+    <li><b>Sin red:</b> <code>npm run scan -- --ticket=T03 --explain --mock</code> corre sobre Medusa con Jev y Claude simulados (necesita <code>../medusa-fork</code>). Las marcas del mock son heurísticas: no prometas <code>refundPayment</code>.</li>
+    <li><b>Respaldo de la corrida real:</b> <code>results-backup/prevuelo-T03-medusa.txt</code> (la salida completa con la explicación de Claude).</li>
+    <li><b>Claude no responde:</b> corre sin <code>--explain</code> (solo Jev) y lee la explicación del respaldo.</li>
+  </ul>
+</section>
+
+<!-- DEMO 3 -->
+<section class="page">
+  <div class="banner b3"><div class="tag">DEMO 3</div><div class="txt"><b>Router de modelos para revisar PRs</b><span>Minutos 18–26 · ¿Cada PR merece al modelo grande, al pequeño o a un checklist sin LLM?</span></div></div>
+  <h3>Qué se cuenta</h3>
+  <p>Un equipo revisa PRs con un LLM. La costumbre es mandarlo todo al modelo grande. Aquí hay 20 PRs reales de Medusa recreadas como PRs abiertas en el fork de LIDR. El "antes" (todo a Sonnet) ya está calculado. En vivo, Jev decide la ruta de cada PR en una llamada: reglas locales sin LLM, Haiku o Sonnet. Lo que toca dinero va siempre al modelo grande. Al final se comparan tokens, costo y la calidad de la revisión de la PR de pagos.</p>
+  <h3>Secuencia de pasos</h3>
+  <table class="d3">
+    <thead><tr><th style="width:4%">#</th><th style="width:12%">Dónde</th><th style="width:28%">Qué haces / escribes</th><th style="width:28%">Qué debe aparecer</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1</td><td class="k">Navegador</td><td>Abre github.com/LIDR-academy/medusa/pulls.</td><td>20 PRs abiertas, sin comentarios.</td><td class="say">"20 PRs reales de Medusa esperando revisión."</td></tr>
+      <tr><td class="k">2</td><td class="k">Terminal</td><td><code>npm run costs</code></td><td>La fila "Demo 3 · revisión de PRs (direct)": 20 a Sonnet, 33,262 / 9,893 tokens, ~$0.17.</td><td class="say">"Así se hace hoy: todo al modelo grande. Esto ya lo corrimos."</td></tr>
+      <tr><td class="k">3</td><td class="k">VS Code</td><td>Abre <code>llm-router/router.ts</code> y luego <code>routeFor</code> en <code>shared/thresholds.ts</code>.</td><td>Dos preguntas a Jev; tres caminos: reglas, Haiku, Sonnet.</td><td class="say">"Una pregunta, tres caminos. Lo que toca dinero siempre va al grande."</td></tr>
+      <tr><td class="k">4</td><td class="k">Terminal</td><td><code>npm run review -- --mode=jev --data=data/prs-fork.json --comment</code></td><td>Una línea por PR con su ruta y confianza; ~40 s en total.</td><td class="say">Mientras corre: "Jev decide en milisegundos; lo lento es la revisión."</td></tr>
+      <tr><td class="k">5</td><td class="k">Navegador</td><td>Refresca una PR, por ejemplo la 15 o la 12.</td><td>Comentario "Router con Jev" con complejidad, dinero y ruta.</td><td class="say">"La decisión queda escrita en la PR, con su porqué."</td></tr>
+      <tr><td class="k">6</td><td class="k">Terminal</td><td><code>npm run compare</code></td><td>Tabla direct frente a jev; ahorro cercano a −50 % y proyección a 500 PRs al mes.</td><td class="say">Silencio. Luego el número.</td></tr>
+      <tr><td class="k">7</td><td class="k">Terminal</td><td><code>npm run show-review -- PR-12</code></td><td>La PR de pagos con Sonnet en ambos modos; las dos revisiones ven los mismos riesgos.</td><td class="say">"Donde importaba, la calidad es la misma."</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Qué se le pregunta a Jev (2 preguntas por PR, una sola llamada)</h3>
+  <p class="note">Archivo: <code>llm-router/router.ts</code>. El <code>state</code> lleva: título, hasta 25 archivos, número de archivos, adiciones, eliminaciones, descripción (600 caracteres) y resumen del diff (3,000).</p>
+  <table class="q">
+    <tr class="head"><td>complejidad <b class="t-d3">choice</b></td><td>¿Qué tan complejo es revisar este cambio con criterio de un revisor senior?</td></tr>
+    <tr><td>trivial</td><td>Typos, docs, formato, renombrar, bumps de versión rutinarios, cambios sin lógica</td></tr>
+    <tr><td>media</td><td>Refactor acotado, endpoint nuevo, lógica simple, pruebas, i18n con lógica</td></tr>
+    <tr><td>alta</td><td>Pagos, reembolsos, créditos, auth/sesiones, migraciones, concurrencia, colas, seguridad, cambios que tocan muchos paquetes</td></tr>
+  </table>
+  <table class="q">
+    <tr class="head"><td>touches_money <b class="t-d3">noul</b></td><td>¿El cambio toca cobros, pagos, reembolsos, créditos, gift cards o datos financieros?</td></tr>
+    <tr><td>true</td><td>Modifica flujos o registros de dinero</td></tr>
+    <tr><td>false</td><td>No toca dinero</td></tr>
+  </table>
+
+  <h3>La petición completa a Jev (PR-15, real)</h3>
+  <p class="note">Una llamada por PR con las 2 preguntas, aquí completas. La descripción y el diff van recortados en esta hoja (en la llamada real, hasta 600 y 3,000 caracteres).</p>
+<pre>{
+  "model": "jev-1.13.0",
+  "state": {
+    "title": "fix(loyalty-plugin): correct transaction note for store credit debits",
+    "files": [
+      ".changeset/store-credit-debit-note.md",
+      "packages/plugins/loyalty/src/workflows/carts/workflows/confirm-cart-credit-lines.ts"
+    ],
+    "changed_files": 2,
+    "additions": 9,
+    "deletions": 1,
+    "description": "Recreada para la demo de Jev a partir de **medusajs/medusa#17077** (https://github.com/medusajs/medusa/pull/17077).\n\nCommit original: `2e6554c59e1d95b9ac52329d40190ce9d6ed1dd7` · base: `demo-base` (ch…",
+    "diff_summary": "### .changeset/store-credit-debit-note.md\n@@ -0,0 +1,5 @@\n+---\n+\"@medusajs/loyalty-plugin\": patch\n+---\n+\n+fix(loyalty-plugin): correct transaction note for store credit debits\n### packages/plugins/loyalty/src/workflows/carts/workflows/confirm-cart-credit-lines.ts\n@@ -199,7 +199,10 @@ export const co…"
+  },
+  "questions": {
+    "complejidad": {
+      "type": "choice",
+      "instructions": "¿Qué tan complejo es revisar este cambio con criterio de un revisor senior?",
+      "criteria": {
+        "trivial": "Typos, docs, formato, renombrar, bumps de versión rutinarios, cambios sin lógica",
+        "media": "Refactor acotado, endpoint nuevo, lógica simple, pruebas, i18n con lógica",
+        "alta": "Pagos, reembolsos, créditos, auth/sesiones, migraciones, concurrencia, colas, seguridad, …"
+      }
+    },
+    "touches_money": {
+      "type": "noul",
+      "instructions": "¿El cambio toca cobros, pagos, reembolsos, créditos, gift cards o datos financieros?",
+      "criteria": {
+        "true": "Modifica flujos o registros de dinero",
+        "false": "No toca dinero"
+      }
+    }
+  }
+}</pre>
+  <h3>La respuesta real de Jev</h3>
+<pre>{
+  "answers": {
+    "complejidad": {"type": "choice", "choice": "alta", "confidence": 0.06, "probabilities": {"trivial": 0.28, "alta": 0.37, "media": 0.35}},
+    "touches_money": {"type": "noul", "noul": 0.97}
+  }
+}</pre>
+  <p class="note">Lectura: la complejidad está repartida (alta 37 %, media 35 %, trivial 28 %; confianza 6 %), pero <b>toca dinero 97 %</b>. La primera regla de tu código gana: va a Sonnet por "toca dinero". Un cambio de 9 líneas, pero en créditos de tienda.</p>
+
+  <h3>Por qué cada pregunta</h3>
+  <table class="d3">
+    <thead><tr><th style="width:16%">Pregunta</th><th style="width:26%">Para qué sirve</th><th style="width:30%">Por qué está redactada así</th><th>Qué hace tu código con la respuesta</th></tr></thead>
+    <tbody>
+      <tr><td><code>complejidad</code></td><td>Decidir cuánto modelo merece la revisión: reglas sin LLM, Haiku o Sonnet.</td><td>Tres niveles descritos por el tipo de cambio que revisaría un senior, no por el tamaño del diff.</td><td>trivial → rules, media → Haiku, alta → Sonnet; si la confianza es &lt; 0.60, Sonnet por si acaso.</td></tr>
+      <tr><td><code>touches_money</code></td><td>Red de seguridad: lo que toca dinero nunca se revisa con el modelo barato.</td><td>Es noul (sí/no) y lista los dominios de dinero (cobros, reembolsos, créditos, gift cards).</td><td>Si ≥ 0.50 va a Sonnet sin importar la complejidad. Se evalúa primero.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Qué decide tu código</h3>
+  <p>En <code>shared/thresholds.ts</code>, función <code>routeFor</code>, en este orden:</p>
+<pre>si toca dinero ≥ 0.50        → sonnet   ("toca dinero")
+si confianza &lt; 0.60          → sonnet   ("confianza baja": ante la duda, el modelo grande)
+si complejidad = trivial     → rules    (checklist local, cero tokens)
+si complejidad = media       → haiku
+si complejidad = alta        → sonnet</pre>
+  <p class="note">La ruta <b>rules</b> no llama a ningún LLM: revisa que haya descripción, que el cambio sea de 100 líneas o menos, que no toque archivos sensibles (payment, refund, auth, session, migration, .env, secret) y que no agregue console.log ni TODO/FIXME (<code>rulesReview</code> en <code>llm-router/llm.ts</code>).</p>
+
+  <h3>El prompt de revisión (idéntico en direct y en jev)</h3>
+  <p class="note">El "antes" de esta demo es <code>npm run review -- --mode=direct --data=data/prs-fork.json</code>: las 20 PRs reales del fork van a Sonnet con este mismo prompt. Es lo que guarda <code>results/direct.json</code>.</p>
+  <p class="note">Archivo: <code>llm-router/llm.ts</code> · Haiku 4.5 o Sonnet 5.5 según la ruta · máximo 600 tokens de salida.</p>
+<pre>Eres un revisor de código senior. Revisa esta pull request y responde en español,
+en máximo 180 palabras:
+1) Riesgo principal (o "ninguno relevante").
+2) Hasta 3 observaciones concretas con archivo.
+3) Veredicto: aprobar / aprobar con cambios / pedir cambios.
+
+Título · Archivos · +adiciones / -eliminaciones · Descripción (800) · Diff (recortado)</pre>
+
+  <h3>Resultados del ensayo</h3>
+  <table>
+    <thead><tr><th style="width:24%">Modo</th><th style="width:26%">Rutas</th><th>Tokens LLM (entrada / salida)</th><th style="width:10%">Tiempo</th></tr></thead>
+    <tbody>
+      <tr><td><b>direct</b> (ya calculado)</td><td>20 a Sonnet</td><td>33,262 / 9,893</td><td>38 s</td></tr>
+      <tr><td><b>jev</b> (ensayo completo, con --comment)</td><td>8 Sonnet · 2 Haiku · 10 reglas</td><td>16,050 / 5,936 + 23,661 de Jev ($0.0010)</td><td>40 s</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Proyección que imprime <code>npm run compare</code> para 500 PRs al mes con esta mezcla: direct $4.14 → jev $2.01, <b>−51 %</b> (en otra corrida, −48 %). Ejemplos de escalado: PR-15 y PR-6 (loyalty-plugin, toca dinero 97 % y 93 %) a Sonnet; PR-16 (i18n checo, confianza baja 28 %) a Sonnet. Di el número que salga en vivo.</p>
+
+  <h3>Cierre técnico (minuto 26)</h3>
+  <p><code>npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json --out=results/cierre.json --concurrency=6</code> (~30 s): el mismo router revisa PRs de <i>fast-jev-compaction</i>, un plugin de Claude Code que a su vez usa Jev. Mismo patrón en otro dominio.</p>
+  <h3>Si algo falla</h3>
+  <ul>
+    <li><b>Sin red:</b> <code>npm run review -- --mode=jev --mock</code> y <code>npm run compare</code> (se ve como MOCK).</li>
+    <li><b>GitHub no deja comentar:</b> corre sin <code>--comment</code>; la terminal muestra igual la ruta de cada PR.</li>
+    <li><b>Se perdió direct.json:</b> <code>npm run review -- --mode=direct --data=data/prs-fork.json</code> (~40 s, no en vivo).</li>
+  </ul>
+</section>
+
+<!-- 7. Cierre -->
+<section class="page">
+  <h1>7. Cierre y costos</h1>
+  <p><code>npm run costs</code> lee todo lo que hay en <code>results/</code> y arma una tabla por ejecución: unidades, llamadas y tokens de Jev, llamadas y tokens de LLM, dólares y tiempo. <code>/costos</code> hace lo mismo y lo explica en una línea por demo. Precios en <code>llm-router/prices.json</code> (verificados el 6 de octubre de 2026):</p>
+  <table>
+    <thead><tr><th>Modelo</th><th style="width:25%">Entrada / millón</th><th style="width:25%">Salida / millón</th></tr></thead>
+    <tbody>
+      <tr><td>Jev (jev-1.13.0)</td><td>$0.042</td><td>gratis</td></tr>
+      <tr><td>Claude Sonnet 5.5</td><td>$2.00</td><td>$10.00</td></tr>
+      <tr><td>Claude Haiku 4.5</td><td>$1.00</td><td>$5.00</td></tr>
+    </tbody>
+  </table>
+  <p>Referencia del ensayo: demo 1 + demo 2 con Jev costaron unos 2 centavos, casi todo de Claude; Jev, una fracción de centavo. Las mismas dos demos sin Jev (todo a Sonnet) costaron 31 centavos. La guía pide que la demo completa con Jev quede bajo $0.10 sin contar los "antes" precalculados.</p>
+  <table>
+    <thead><tr><th>Demo</th><th style="width:20%">Antes (todo a Sonnet)</th><th style="width:20%">Después (Jev decide)</th><th style="width:16%">Ahorro</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Triage (22 tickets)</td><td>$0.078</td><td>$0.0009</td><td>~87× más barato</td></tr>
+      <tr><td>2 · Pre-vuelo (58 funciones)</td><td>$0.235</td><td>$0.022</td><td>~10× más barato</td></tr>
+      <tr><td>3 · Router (20 PRs)</td><td>$0.166</td><td>$0.077</td><td>−53 %</td></tr>
+    </tbody>
+  </table>
+  <h3>Secuencia del cierre</h3>
+  <table class="pu">
+    <thead><tr><th style="width:4%">#</th><th style="width:12%">Dónde</th><th style="width:30%">Qué haces / escribes</th><th style="width:26%">Qué debe aparecer</th><th>Qué dices</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1</td><td class="k">Terminal</td><td><code>npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json --out=results/cierre.json --concurrency=6</code></td><td>12 PRs del plugin con su ruta; ~30 s.</td><td class="say">Mientras corre: "Este plugin de Claude Code usa Jev. Lo revisa un router que usa Jev."</td></tr>
+      <tr><td class="k">2</td><td class="k">Diapositiva</td><td>El patrón: estado → pregunta tipada → Jev → probabilidad → tu código decide → acción.</td><td></td><td class="say">"Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código."</td></tr>
+      <tr><td class="k">3</td><td class="k">Terminal o Claude Code</td><td><code>npm run costs</code> o <code>/costos</code></td><td>Cada demo con su fila antes (direct) y después (jev), y el cierre en su propia fila. Total ~$0.67, de los que ~$0.48 son los tres "antes" precalculados.</td><td class="say">"Esto costó toda la demo."</td></tr>
+    </tbody>
+  </table>
+  <h3>Frases para el cierre</h3>
+  <ul>
+    <li>"Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código."</li>
+    <li>"En la demo 2 nadie sabía que ese bug estaba en Medusa. Jev señaló una función de 58 y ahí estaba."</li>
+    <li>"Claude solo trabajó donde hacía falta, con el modelo que hacía falta."</li>
+  </ul>
+  <h3>Límites que conviene decir en voz alta</h3>
+  <ul>
+    <li>Jev no explica ni razona: no sustituye la revisión de código ni el análisis de un bug. En la demo 2, Jev dice dónde mirar; Claude dice qué está mal.</li>
+    <li>Como cualquier modelo, es vulnerable a texto malicioso dentro del ticket o la PR. Por eso los umbrales y la revisión humana viven en tu código.</li>
+    <li>El ahorro depende de la mezcla de PRs. Di el número que salga.</li>
+  </ul>
+</section>
+
+<!-- 8. Referencia -->
+<section class="page">
+  <h1>8. Referencia rápida de comandos y skills</h1>
+  <table>
+    <thead><tr><th style="width:42%">Comando / skill</th><th>Qué hace</th><th style="width:9%">Demo</th></tr></thead>
+    <tbody>
+      <tr><td><code>/triage &lt;texto&gt;</code></td><td>Claude crea el issue con el MCP y llama a npm run triage</td><td>1</td></tr>
+      <tr><td><code>npm run triage -- KAN-251</code></td><td>Jev clasifica un issue que ya existe y escribe en Jira</td><td>1</td></tr>
+      <tr><td><code>npm run batch -- --no-create</code></td><td>Clasifica todos los tickets con etiqueta batch sin terminar</td><td>1</td></tr>
+      <tr><td><code>npm run batch -- --mode=direct</code></td><td>El antes: Sonnet clasifica los mismos issues de KAN (solo lectura)</td><td>prep</td></tr>
+      <tr><td><code>npm run seed -- --done=8</code></td><td>Siembra los 30 tickets y pasa 8 a Finalizada (con keys nuevas)</td><td>prep</td></tr>
+      <tr><td><code>npm run reset</code></td><td>Borra los issues de la demo en KAN y vacía results/, salvo los tres "antes"</td><td>prep</td></tr>
+      <tr><td><code>npm run reset -- --baselines</code></td><td>Además borra los tres "antes"</td><td>prep</td></tr>
+      <tr><td><code>npm run scan -- --ticket=T03</code></td><td>Pre-vuelo con Jev sobre Medusa</td><td>2</td></tr>
+      <tr><td><code>... --explain · /pre-vuelo T03</code></td><td>Además Claude explica lo marcado</td><td>2</td></tr>
+      <tr><td><code>npm run scan -- --ticket=T03 --mode=direct</code></td><td>El antes: Claude revisa las 58 funciones, sin Jev</td><td>prep</td></tr>
+      <tr><td><code>npm run review -- --mode=direct|jev</code></td><td>Revisión de PRs todo a Sonnet o con el router</td><td>3</td></tr>
+      <tr><td><code>--data=data/prs-fork.json --comment</code></td><td>Usa las PRs del fork y comenta en GitHub</td><td>3</td></tr>
+      <tr><td><code>npm run compare</code></td><td>Tabla direct frente a jev y proyección</td><td>3</td></tr>
+      <tr><td><code>npm run show-review -- PR-12</code></td><td>Revisión de una PR en ambos modos</td><td>3</td></tr>
+      <tr><td><code>npm run costs · /costos</code></td><td>Costo de cada ejecución (el cierre al final)</td><td>todas</td></tr>
+      <tr><td><code>npm run costs -- --demo=1,2</code></td><td>Solo las demos indicadas (minuto 17)</td><td>2</td></tr>
+      <tr><td><code>--out=results/cierre.json</code></td><td>En review: guarda aparte para no pisar results/jev.json</td><td>cierre</td></tr>
+      <tr><td><code>--fresh</code></td><td>En scan: vuelve a preguntarle a Jev en lugar de reutilizar</td><td>2</td></tr>
+      <tr><td><code>--mock</code></td><td>En cualquier comando: sin Jev, Claude ni Jira (ensayo sin red)</td><td>todas</td></tr>
+      <tr><td><code>npm test</code></td><td>14 pruebas: umbrales y lectura de las respuestas del LLM</td><td>prep</td></tr>
+    </tbody>
+  </table>
+
+  <h1 style="margin-top:20pt">9. Qué se ajustó en el ensayo (por si preguntan)</h1>
+  <ul>
+    <li><b>Jev rechazaba todas las llamadas reales</b> (400): el cliente mandaba un campo <code>user</code> que la API no acepta. Se quitó en <code>shared/jev.ts</code>.</li>
+    <li><b>El triage escribía en issues equivocados:</b> emparejaba por posición y los 8 en Finalizada descuadraban el orden. Ahora empareja por título (<code>jira-triage/batch.ts</code>).</li>
+    <li><b>Prioridad:</b> con criterios vagos Jev daba "alta" a casi todo y escalaba 15 tickets; con criterios concretos en inglés escalan exactamente los 3 ambiguos.</li>
+    <li><b>Pre-vuelo en Medusa:</b> de 21 marcas de ruido a 1–2 marcas útiles afinando las opciones de responsabilidades y duplicación. La referencia para no romperlo es <code>results-backup/code-health-T03-medusa.json</code> (<code>sample-app</code> ya no está en el repo).</li>
+    <li><b>Claude por CLI:</b> la API de Anthropic no tiene saldo; <code>CLAUDE_ENGINE=cli</code> usa <code>claude -p</code> con tu sesión. Sin herramientas ni MCP, cada llamada entra con ~1,000 tokens, así que los costos siguen limpios.</li>
+    <li><b>Demo 1 en vivo sin webhook:</b> en lugar de túnel y webhook, el skill <code>/triage</code> crea el issue con el MCP y lo clasifica.</li>
+    <li><b>Un "antes" para cada demo:</b> las demos 1 y 2 solo medían a Jev. Ahora <code>batch</code> y <code>scan</code> tienen <code>--mode=direct</code> (todo a Sonnet, sobre los mismos datos reales), como ya lo tenía la demo 3. <code>npm run reset</code> los conserva porque se precalculan una vez.</li>
+    <li><b>Lo que encontró el ensayo completo:</b> ver la sección 10.</li>
+  </ul>
+</section>
+
+<!-- 10. Ensayo -->
+<section class="page">
+  <h1>10. Ensayo completo del 7 de octubre</h1>
+  <p>Se corrió la demo entera en orden, con servicios reales: Jira, Jev, Claude por la CLI y GitHub (incluidos los 20 comentarios en las PRs). Luego se corrigió lo que falló, se volvió a probar y se dejó todo limpio.</p>
+  <h2>Tiempos reales de cada comando</h2>
+  <table>
+    <thead><tr><th style="width:6%">Min</th><th style="width:36%">Comando</th><th style="width:16%">Tiempo real</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>3</td><td>/triage (MCP + <code>npm run triage</code>)</td><td>~2 s el script</td><td>KAN-159 → Error · Highest · pagos · apply; comentario en Jira</td></tr>
+      <tr><td>6</td><td><code>npm run batch -- --no-create</code></td><td>2.4 s</td><td>16 apply · 3 apply_and_flag · 3 escalate · 19/19</td></tr>
+      <tr><td>11</td><td><code>npm run scan -- --ticket=T03</code></td><td>1.0 s</td><td>58 funciones · 1 o 2 marcadas</td></tr>
+      <tr><td>13</td><td><code>... --explain</code></td><td>6.6 s (antes 18 s)</td><td>Mismas marcas que el min 11; Claude explica en paralelo</td></tr>
+      <tr><td>15</td><td>node -e de JPY</td><td>instantáneo</td><td>USD 2 decimales · JPY → TypeError</td></tr>
+      <tr><td>17</td><td><code>npm run costs -- --demo=1,2</code></td><td>instantáneo</td><td>Demo 1 + demo 2: unos 2 centavos</td></tr>
+      <tr><td>20</td><td><code>review --mode=jev ... --comment</code></td><td>40 s</td><td>8 Sonnet · 2 Haiku · 10 reglas; 20 comentarios en GitHub</td></tr>
+      <tr><td>23</td><td><code>npm run compare</code></td><td>instantáneo</td><td>−51 % de costo frente a todo a Sonnet</td></tr>
+      <tr><td>25</td><td><code>npm run show-review -- PR-12</code></td><td>0.2 s</td><td>Sonnet en ambos modos; las dos revisiones ven los mismos riesgos</td></tr>
+      <tr><td>26</td><td><code>review ... fast-jev-compaction --out ... --concurrency=6</code></td><td>31 s (antes 60 s)</td><td>12 PRs: 2 reglas · 8 Haiku · 2 Sonnet</td></tr>
+      <tr><td>29</td><td><code>npm run costs</code></td><td>instantáneo</td><td>Total ~$0.35, de los que $0.17 son el direct precalculado</td></tr>
+    </tbody>
+  </table>
+  <h2>Qué falló y cómo se corrigió</h2>
+  <table>
+    <thead><tr><th style="width:30%">Problema en el ensayo</th><th style="width:33%">Por qué importaba en vivo</th><th>Corrección</th></tr></thead>
+    <tbody>
+      <tr><td>El filtro <code>labels = revisar</code> mostraba 6 tickets, no 3</td><td>Ibas a decir "los 3 ambiguos" y se veían 6: los aplicados con marca también llevaban revisar</td><td>Los escalados llevan su propia etiqueta, <code>escalado</code>. El filtro del minuto 8 es <code>labels = escalado</code>.</td></tr>
+      <tr><td>El minuto 11 dijo "1 marcada" y el 13 "2 marcadas"</td><td>--explain volvía a preguntarle a Jev, y refundPayment está en el límite del umbral</td><td>El pre-vuelo guarda las respuestas de Jev; --explain las reutiliza. Mismos números en los dos pasos.</td></tr>
+      <tr><td>--explain tardaba 18 s</td><td>Silencio largo en pantalla</td><td>Claude explica las funciones en paralelo: 6.6 s.</td></tr>
+      <tr><td><code>npm run costs</code> en el min 17 ya mostraba la demo 3</td><td>Revelaba el costo de "todo a Sonnet" antes de presentarlo</td><td><code>npm run costs -- --demo=1,2</code>.</td></tr>
+      <tr><td>El cierre pisaba results/jev.json y tardaba 60 s</td><td>El costs final ya no mostraba la demo 3; un minuto de espera en el cierre</td><td><code>--out=results/cierre.json</code> (fila propia en costs) y <code>--concurrency=6</code>: 31 s.</td></tr>
+      <tr><td>El costo de un ticket salía como $0.0000</td><td>Parece gratis o un error</td><td>Bajo una décima de centavo se muestran 6 decimales: $0.000039.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Lo que el ensayo no pudo probar</h2>
+  <ul>
+    <li><b>Los skills escritos desde Claude Code abierto en jev-dev-demo</b> (<code>/triage</code>, <code>/pre-vuelo</code>, <code>/costos</code>). En el ensayo se hizo lo mismo paso a paso, porque esta sesión arrancó en otra carpeta. Pruébalos una vez antes de la sesión.</li>
+    <li><b>La red del lugar y el hotspot.</b> Todo corrió en tu red. Ensaya una vez con el celular.</li>
+    <li><b>Tu ritmo hablando.</b> Los comandos suman unos 2.5 minutos de espera en total; el resto del tiempo es tuyo. Cronométrate una vez con el minuto a minuto.</li>
+  </ul>
+  <div class="call ok"><b>Estado después del ensayo:</b> KAN con 30 tickets, KAN-221 a KAN-250 (22 por hacer, 8 en Finalizada), 0 comentarios en las PRs del fork y results/ solo con los tres "antes" (triage-direct.json, code-health-direct.json y direct.json). El <code>/triage</code> en vivo creará KAN-251. Listo para la sesión.</div>
+</section>
+
+</body>
+</html>
