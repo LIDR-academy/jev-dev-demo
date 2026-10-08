@@ -1,5 +1,10 @@
-/** Comentarios en PRs de GitHub vía fetch. Solo actúa si hay GITHUB_TOKEN. */
-const TOKEN = process.env.GITHUB_TOKEN;
+/** Comentarios en PRs de GitHub vía fetch. Usa GITHUB_TOKEN o, si está vacío, la sesión de `gh` (gh auth token). */
+import { execFileSync } from "node:child_process";
+
+function ghToken(): string | undefined {
+  try { return execFileSync("gh", ["auth", "token"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() || undefined; } catch { return undefined; }
+}
+const TOKEN = process.env.GITHUB_TOKEN || ghToken();
 
 export function parsePrUrl(url?: string): { owner: string; repo: string; number: number } | null {
   const m = url?.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
