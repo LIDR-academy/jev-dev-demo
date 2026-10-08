@@ -46,7 +46,8 @@ export async function askJev<Q extends Record<string, Question>>(state: unknown,
   const res = await fetch(`${BASE_URL}/v1/systemone`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: MODEL, state, questions, user }),
+    // Sin `user`: la API responde 400 "Invalid request" si se manda.
+    body: JSON.stringify({ model: MODEL, state, questions }),
   });
   if (!res.ok) throw new Error(`Jev ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as Omit<JevResult<Q>, "ms">;
@@ -54,7 +55,7 @@ export async function askJev<Q extends Record<string, Question>>(state: unknown,
 }
 
 /** Estimación de costo de una llamada a Jev (solo cobra input). */
-export function jevCost(inputTokens: number, pricePerM = Number(process.env.JEV_PRICE_PER_M ?? 0.1)) {
+export function jevCost(inputTokens: number, pricePerM = Number(process.env.JEV_PRICE_PER_M ?? 0.042)) {
   return (inputTokens / 1e6) * pricePerM;
 }
 

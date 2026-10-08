@@ -1,0 +1,475 @@
+{
+  "at": "2026-10-08T02:48:07.280Z",
+  "ticket": "T11",
+  "ticketTitle": "Cupón de descuento se aplica dos veces",
+  "files": [
+    "sample-app/payments/totals.ts",
+    "sample-app/payments/tax.ts"
+  ],
+  "mock": false,
+  "jevMs": 430,
+  "jevTokens": 9048,
+  "jevCost": 0.0009048000000000001,
+  "findings": [
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "computeOrderTotal",
+      "lines": 9,
+      "flags": [],
+      "severity": 1.89,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.44,
+          "probabilities": {
+            "una": 0.72,
+            "varias": 0.28
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.07
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.09
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.89,
+          "confidence": 0.52,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.13,
+            "1": 0.03,
+            "2": 0.65,
+            "3": 0.19
+          }
+        }
+      },
+      "jevMs": 265,
+      "jevTokens": 1165
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "splitTotal",
+      "lines": 5,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.96
+        },
+        {
+          "key": "logica_duplicada",
+          "p": 0.6
+        }
+      ],
+      "severity": 1.59,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.94,
+          "probabilities": {
+            "una": 0.97,
+            "varias": 0.03
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.6
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.59,
+          "confidence": 0.38,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.24,
+            "1": 0.04,
+            "2": 0.62,
+            "3": 0.1
+          }
+        }
+      },
+      "jevMs": 265,
+      "jevTokens": 1190
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "applyCoupon",
+      "lines": 7,
+      "flags": [
+        {
+          "key": "varias_responsabilidades",
+          "p": 0.98
+        },
+        {
+          "key": "muta_entrada",
+          "p": 0.99
+        }
+      ],
+      "severity": 1.56,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "varias",
+          "confidence": 0.98,
+          "probabilities": {
+            "varias": 0.99,
+            "una": 0.01
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.11
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.56,
+          "confidence": 0.24,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.22,
+            "1": 0.16,
+            "2": 0.46,
+            "3": 0.16
+          }
+        }
+      },
+      "jevMs": 265,
+      "jevTokens": 1068
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "removeTax",
+      "lines": 4,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.96
+        },
+        {
+          "key": "logica_duplicada",
+          "p": 0.71
+        }
+      ],
+      "severity": 1.41,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 1,
+          "probabilities": {
+            "una": 1,
+            "varias": 0
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.71
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.41,
+          "confidence": 0.29,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.3,
+            "1": 0.05,
+            "2": 0.59,
+            "3": 0.06
+          }
+        }
+      },
+      "jevMs": 416,
+      "jevTokens": 1189
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "addTax",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.87,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.78,
+          "probabilities": {
+            "una": 0.89,
+            "varias": 0.11
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.36
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.33
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.87,
+          "confidence": 0.11,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.55,
+            "1": 0.06,
+            "2": 0.34,
+            "3": 0.05
+          }
+        }
+      },
+      "jevMs": 265,
+      "jevTokens": 1077
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "computeSubtotal",
+      "lines": 5,
+      "flags": [],
+      "severity": 0.82,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.99,
+          "probabilities": {
+            "una": 1,
+            "varias": 0
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.09
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.37
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.82,
+          "confidence": 0.18,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.57,
+            "1": 0.08,
+            "2": 0.32,
+            "3": 0.03
+          }
+        }
+      },
+      "jevMs": 278,
+      "jevTokens": 1112
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "calculateTax",
+      "lines": 5,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.97
+        },
+        {
+          "key": "logica_duplicada",
+          "p": 0.6
+        }
+      ],
+      "severity": 0.75,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.68,
+          "probabilities": {
+            "una": 0.84,
+            "varias": 0.16
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.97
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.6
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.75,
+          "confidence": 0.25,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.61,
+            "1": 0.05,
+            "2": 0.32,
+            "3": 0.02
+          }
+        }
+      },
+      "jevMs": 275,
+      "jevTokens": 1240
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "isZeroRated",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.5,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 1,
+          "probabilities": {
+            "una": 1,
+            "varias": 0
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.5,
+          "confidence": 0.5,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.75,
+            "1": 0.02,
+            "2": 0.21,
+            "3": 0.02
+          }
+        }
+      },
+      "jevMs": 264,
+      "jevTokens": 1007
+    }
+  ]
+}

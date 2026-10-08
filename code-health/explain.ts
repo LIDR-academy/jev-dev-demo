@@ -2,7 +2,7 @@
 import type { Fn } from "./split.ts";
 export { LLM_MOCK } from "../llm-router/llm.ts";
 
-const MODEL = process.env.MODEL_LARGE ?? "claude-sonnet-4-5";
+const MODEL = process.env.MODEL_LARGE ?? "claude-sonnet-5-5";
 const MOCK = process.env.ANTHROPIC_MOCK === "1" || process.argv.includes("--mock");
 
 const LABELS: Record<string, string> = {

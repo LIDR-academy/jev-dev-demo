@@ -13,19 +13,20 @@ export const TICKET_QUESTIONS = {
   tipo: choice("¿Qué tipo de issue es?", {
     bug: "Algo que antes funcionaba y ahora falla",
     feature: "Funcionalidad nueva solicitada",
-    deuda_tecnica: "Refactor, limpieza, dependencias o mejora interna sin cambio visible",
+    deuda_tecnica: "Refactor, limpieza, dependencias, pruebas automatizadas, cumplimiento o mejora interna sin cambio visible para el cliente",
     soporte: "Pregunta o duda de uso, sin cambio de código",
   }),
-  prioridad: choice("¿Qué prioridad merece?", {
-    critica: "Bloquea ventas, cobra mal o afecta a todos los usuarios en producción",
-    alta: "Afecta a un segmento importante, a un flujo clave o es un riesgo de seguridad/fiscal",
-    media: "Molesto pero con workaround",
-    baja: "Cosmético, de bajo impacto o una duda",
+  // En inglés y con ejemplos concretos: con criterios vagos Jev real daba "alta" a casi todo con poca confianza.
+  prioridad: choice("What priority does this ticket deserve? Judge the business impact today, not how alarming the wording sounds.", {
+    critica: "Money or orders are wrong or blocked right now in production: payments fail for a whole card brand, customers are charged twice, discounts or orders are duplicated. Must be fixed today.",
+    alta: "Important but not losing money right now: a key flow broken for one segment (e.g. login on one browser, sessions expiring), security vulnerabilities, legal or tax obligations, or work that protects or unlocks revenue (new payment methods, test coverage of checkout).",
+    media: "Annoying but with a workaround or limited reach: slow reports, layout glitches on one device, search or export edge cases, delayed notifications, internal refactors, search that misses some results, new dashboards, or new customer-facing pages and buttons that are useful but not urgent.",
+    baja: "Cosmetic, a how-to question, or a nice-to-have with little impact: dark mode, slightly blurry images on some screens, questions about how to use the product.",
   }),
   equipo: choice("¿Qué equipo debe atenderlo?", {
     pagos: "Checkout, pasarelas, tarjetas, cupones, facturación, reembolsos",
     plataforma: "Infra, autenticación, sesiones, APIs internas, colas, notificaciones, rendimiento",
-    frontend: "UI web o móvil, estilos, imágenes, navegación",
+    frontend: "UI web o móvil, estilos, imágenes, navegación, páginas o botones nuevos que ve el cliente",
     datos: "Reportes, métricas, búsqueda, exportaciones, pipelines",
   }),
   needs_human: noul("¿El ticket es demasiado ambiguo o contradictorio para clasificarlo sin una persona?", {

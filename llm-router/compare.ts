@@ -10,7 +10,7 @@ type File = { mode: string; repo: string; mock: boolean; totalMs: number; result
 
 const prices: Record<string, { input_per_m: number; output_per_m: number }> = JSON.parse(readFileSync("llm-router/prices.json", "utf8"));
 const MODEL_SMALL = process.env.MODEL_SMALL ?? "claude-haiku-4-5";
-const MODEL_LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-4-5";
+const MODEL_LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-5-5";
 const JEV_MODEL = process.env.JEV_MODEL ?? "jev-1.13.0";
 
 const price = (model: string) => prices[model] ?? prices[model.replace(" (mock)", "")] ?? { input_per_m: 0, output_per_m: 0 };

@@ -8,7 +8,7 @@ import type { Route } from "../shared/thresholds.ts";
 export type Review = { model: string; text: string; input_tokens: number; output_tokens: number; ms: number; mock?: boolean };
 
 const MODEL_SMALL = process.env.MODEL_SMALL ?? "claude-haiku-4-5";
-const MODEL_LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-4-5";
+const MODEL_LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-5-5";
 export const LLM_MOCK = process.env.ANTHROPIC_MOCK === "1" || process.argv.includes("--mock");
 
 export const modelFor = (route: Route) => (route === "haiku" ? MODEL_SMALL : route === "sonnet" ? MODEL_LARGE : "rules");

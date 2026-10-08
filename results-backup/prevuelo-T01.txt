@@ -1,0 +1,27 @@
+
+> jev-dev-demo@0.1.0 scan
+> node --env-file-if-exists=.env code-health/scan.ts --ticket=T01
+
+
+Pre-vuelo para T01 "El checkout falla con tarjetas Amex en producción" · 2 archivos · jev real
+
+8 funciones en 2 archivos
+┌─────────────────────┬───────────────────┬────────┬───────────────────────────────────────────────────────────────────────┬──────┬─────┐
+│ Archivo             │ Función           │ Líneas │ Lo que marcó Jev                                                      │ Sev. │  ms │
+├─────────────────────┼───────────────────┼────────┼───────────────────────────────────────────────────────────────────────┼──────┼─────┤
+│ payments/gateway.ts │ chargeGateway     │     19 │ varias_responsabilidades 84%, traga_errores 97%, logica_duplicada 76% │  2.8 │ 266 │
+│ payments/gateway.ts │ getChargeStatus   │      6 │ limpia                                                                │  2.0 │ 282 │
+│ payments/totals.ts  │ computeOrderTotal │      9 │ limpia                                                                │  1.9 │ 202 │
+│ payments/totals.ts  │ applyCoupon       │      7 │ varias_responsabilidades 98%, muta_entrada 99%                        │  1.6 │ 217 │
+│ payments/gateway.ts │ refundGateway     │     14 │ limpia                                                                │  1.5 │ 198 │
+│ payments/totals.ts  │ splitTotal        │      5 │ numero_magico 96%                                                     │  1.2 │ 379 │
+│ payments/totals.ts  │ computeSubtotal   │      5 │ limpia                                                                │  1.1 │ 211 │
+│ payments/gateway.ts │ detectBrand       │      6 │ limpia                                                                │  0.9 │ 258 │
+└─────────────────────┴───────────────────┴────────┴───────────────────────────────────────────────────────────────────────┴──────┴─────┘
+
+Jev  8 funciones · 393 ms total · 9,384 tokens · $0.0009
+      3 marcadas · 5 limpias → solo las marcadas van al LLM
+
+
+Contra bugs-sembrados.json: 2/3 detectados · falsos positivos en controles: 0
+→ results/code-health.json

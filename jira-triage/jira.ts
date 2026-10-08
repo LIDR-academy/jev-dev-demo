@@ -10,7 +10,8 @@ const TEAM_FIELD = process.env.JIRA_TEAM_FIELD_ID; // customfield_XXXXX de "Equi
 export const JIRA_MOCK = process.env.JIRA_MOCK === "1" || process.argv.includes("--mock") || process.argv.includes("--dry-run");
 
 // Mapeo de las opciones de Jev a los nombres que Jira espera. Ajusta a tu proyecto.
-export const ISSUE_TYPE: Record<string, string> = { bug: "Bug", feature: "Story", deuda_tecnica: "Task", soporte: "Task" };
+// Proyecto KAN (team-managed en español): Error, Historia, Tarea.
+export const ISSUE_TYPE: Record<string, string> = { bug: "Error", feature: "Historia", deuda_tecnica: "Tarea", soporte: "Tarea" };
 export const PRIORITY: Record<string, string> = { critica: "Highest", alta: "High", media: "Medium", baja: "Low" };
 export const TEAM_LABEL: Record<string, string> = { pagos: "Pagos", plataforma: "Plataforma", frontend: "Frontend", datos: "Datos" };
 
@@ -39,14 +40,14 @@ export async function createIssue(summary: string, description: string, labels: 
   if (JIRA_MOCK) return { key: `${PROJECT}-${Math.floor(Math.random() * 900 + 100)}`, mock: true };
   return jira("/issue", {
     method: "POST",
-    body: JSON.stringify({ fields: { project: { key: PROJECT }, summary, description: adf(description || "(sin descripción)"), issuetype: { name: "Task" }, labels } }),
+    body: JSON.stringify({ fields: { project: { key: PROJECT }, summary, description: adf(description || "(sin descripción)"), issuetype: { name: ISSUE_TYPE.soporte }, labels } }),
   });
 }
 
 export async function applyClassification(key: string, c: Classification) {
   const fields: Record<string, unknown> = {};
   if (c.action !== "escalate") {
-    fields.issuetype = { name: ISSUE_TYPE[c.tipo] ?? "Task" };
+    fields.issuetype = { name: ISSUE_TYPE[c.tipo] ?? ISSUE_TYPE.soporte };
     fields.priority = { name: PRIORITY[c.prioridad] ?? "Medium" };
     if (TEAM_FIELD) fields[TEAM_FIELD] = { value: TEAM_LABEL[c.equipo] ?? c.equipo };
   }
@@ -65,9 +66,9 @@ export async function addComment(key: string, text: string) {
   return jira(`/issue/${key}/comment`, { method: "POST", body: JSON.stringify({ body: adf(text) }) });
 }
 
-export async function searchIssues(jql: string, maxResults = 100): Promise<{ key: string }[]> {
+export async function searchIssues(jql: string, maxResults = 100, fields = ["key"]): Promise<{ key: string; fields?: Record<string, any> }[]> {
   if (JIRA_MOCK) return [];
-  const data = await jira(`/search/jql`, { method: "POST", body: JSON.stringify({ jql, maxResults, fields: ["key"] }) });
+  const data = await jira(`/search/jql`, { method: "POST", body: JSON.stringify({ jql, maxResults, fields }) });
   return data.issues ?? [];
 }
 

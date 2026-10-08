@@ -26,9 +26,13 @@ console.log(bold(`\nTriage de ${tickets.length} tickets`), dim(`(${DATA}) · jev
 const t0 = performance.now();
 let keyed: { key: string; t: Ticket }[];
 if (NO_CREATE && !JIRA_MOCK) {
-  const found = await searchIssues(`project = ${projectKey} AND labels = batch AND statusCategory != Done ORDER BY created ASC`, 200);
-  // Emparejamos por orden de creación; si importaste el CSV en orden, coincide con tickets.json
-  keyed = found.slice(0, tickets.length).map((f, i) => ({ key: f.key, t: tickets[i] }));
+  const found = await searchIssues(`project = ${projectKey} AND labels = batch AND statusCategory != Done ORDER BY created ASC`, 200, ["summary"]);
+  // Emparejamos por título, no por orden: los tickets movidos a Listo (seed --done) descuadrarían el orden
+  const norm = (s: string) => s.trim().toLowerCase();
+  keyed = found.flatMap((f) => {
+    const t = tickets.find((x) => norm(x.title) === norm(f.fields?.summary ?? ""));
+    return t ? [{ key: f.key, t }] : [];
+  });
   console.log(dim(`${keyed.length} issues encontrados con etiqueta batch`));
 } else {
   keyed = await Promise.all(tickets.map(async (t) => ({ key: (await createIssue(t.title, t.description, ["batch"])).key, t })));
@@ -69,7 +73,7 @@ ${bold("Totales")}
   Tickets          ${bold(num(results.length))}
   Tiempo total     ${bold(num(jevMs))} ms   ${gray(`(~${Math.round(jevMs / results.length)} ms por ticket, en paralelo)`)}
   Tokens a Jev     ${num(tokens)}
-  Costo estimado   ${bold(usd(cost))} USD   ${gray(`(${process.env.JEV_PRICE_PER_M ?? 0.1} USD / M tokens; solo input)`)}
+  Costo estimado   ${bold(usd(cost))} USD   ${gray(`(${process.env.JEV_PRICE_PER_M ?? 0.042} USD / M tokens; solo input)`)}
   Acciones         ${green(count("apply") + " apply")} · ${yellow(count("apply_and_flag") + " apply_and_flag")} · ${red(count("escalate") + " escalate")}
   Tipo+equipo OK   ${hits}/${graded} ${gray("(contra el campo expected de tickets.json)")}
 `);

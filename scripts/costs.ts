@@ -9,7 +9,7 @@ import { table, bold, dim, gray, usd, num } from "../shared/ui.ts";
 const prices: Record<string, { input_per_m: number; output_per_m: number }> = JSON.parse(readFileSync("llm-router/prices.json", "utf8"));
 const JEV = process.env.JEV_MODEL ?? "jev-1.13.0";
 const SMALL = process.env.MODEL_SMALL ?? "claude-haiku-4-5";
-const LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-4-5";
+const LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-5-5";
 const price = (m: string) => prices[m] ?? prices[m.replace(" (mock)", "")] ?? { input_per_m: 0, output_per_m: 0 };
 const cost = (m: string, i: number, o: number) => (i / 1e6) * price(m).input_per_m + (o / 1e6) * price(m).output_per_m;
 
