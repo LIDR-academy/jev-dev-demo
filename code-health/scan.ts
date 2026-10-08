@@ -1,5 +1,5 @@
 /**
- * Acto 2 — Pre-vuelo: bugs que YA existen en el código que vas a tocar para una tarea.
+ * Demo 2 — Pre-vuelo: bugs que YA existen en el código que vas a tocar para una tarea.
  *
  *   npm run scan -- --ticket=T03            → archivos de data/tickets-files.json para ese ticket
  *   npm run scan -- --files=sample-app/payments/refund.ts,sample-app/payments/tax.ts

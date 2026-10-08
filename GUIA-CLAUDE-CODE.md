@@ -96,11 +96,11 @@ Verifica en Jira (por API) que hay 30 issues con etiqueta batch, 8 en Listo, y q
 Después corre `npm run batch -- --no-create` y confirma que los 22 pendientes quedan clasificados (los 8 en Listo no se tocan), que los 3 ambiguos (T28, T29, T30) quedaron con acción escalate, y guarda la salida de consola en results/ensayo-acto1.txt.
 ```
 
-**Debe salir:** 30 sembrados (8 en Listo), luego 22 clasificados en segundos con 3 escalados. Ese es el acto 1 completo, real.
+**Debe salir:** 30 sembrados (8 en Listo), luego 22 clasificados en segundos con 3 escalados. Esa es la demo 1 completa, real.
 
 ---
 
-## Paso 5b — Acto 2 con Jev real: pre-vuelo del código
+## Paso 5b — Demo 2 con Jev real: pre-vuelo del código
 
 ```markdown
 Lee data/bugs-sembrados.json y sample-app/ para entender qué bugs hay y dónde. No los corrijas ni los muevas.
@@ -116,12 +116,12 @@ Prueba el skill: escribe `/pre-vuelo T03` en esta sesión y confirma que present
 ## Paso 5c — Costes
 
 ```markdown
-Corre `npm run costs` y luego el skill `/costos`. Confirma que aparecen el acto 1 (triage) y el acto 2 (pre-vuelo) con sus tokens y USD reales, y que el total de la demo hasta ahora es menor a $0.10 USD. Si los precios de prices.json no están actualizados, hazlo ahora desde las páginas oficiales y cita las URLs en _nota.
+Corre `npm run costs` y luego el skill `/costos`. Confirma que aparecen la demo 1 (triage) y la demo 2 (pre-vuelo) con sus tokens y USD reales, y que el total de la demo hasta ahora es menor a $0.10 USD. Si los precios de prices.json no están actualizados, hazlo ahora desde las páginas oficiales y cita las URLs en _nota.
 ```
 
 ---
 
-## Paso 6 — Precios y acto 2 con PRs reales de Medusa
+## Paso 6 — Precios y demo 3 con PRs reales de Medusa
 
 ```markdown
 Actualiza llm-router/prices.json con los precios vigentes por millón de tokens de claude-sonnet-4-5, claude-haiku-4-5 (página de precios de Anthropic) y de Jev (página de precios de TypeSafe AI). Cita las URLs en el campo _nota.
@@ -166,7 +166,7 @@ Crea un webhook en el fork con gh api POST /repos/<usuario>/medusa/hooks (conten
 Para probarlo sin clonar completo: con la API de contenidos de GitHub crea la rama demo/live desde demo-base, modifica README.md agregando una línea, y abre una PR hacia demo-base del fork (NUNCA hacia medusajs/medusa). Espera 5 segundos y muéstrame el log del servidor y el comentario que dejó en la PR. Ciérrala al terminar.
 ```
 
-**Debe salir:** una PR nueva que el router clasifica y comenta sola al abrirse, igual que Jira en el acto 1.
+**Debe salir:** una PR nueva que el router clasifica y comenta sola al abrirse, igual que Jira en la demo 1.
 
 ## Paso 8 — Cierre con fast-jev-compaction
 

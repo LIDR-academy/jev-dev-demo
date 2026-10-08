@@ -1,6 +1,6 @@
 ---
 name: triage
-description: Acto 1 en vivo. Crea un issue en Jira con el MCP de Atlassian a partir de lo que diga el usuario y lo clasifica con Jev (tipo, prioridad, equipo, si necesita humano). Usar cuando digan "/triage", "crea un ticket y clasifícalo", "levanta un issue de..." o peguen una queja de cliente.
+description: Demo 1 en vivo. Crea un issue en Jira con el MCP de Atlassian a partir de lo que diga el usuario y lo clasifica con Jev (tipo, prioridad, equipo, si necesita humano). Usar cuando digan "/triage", "crea un ticket y clasifícalo", "levanta un issue de..." o peguen una queja de cliente.
 ---
 
 # Triage en vivo: Claude crea, Jev decide

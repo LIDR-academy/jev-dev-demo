@@ -1,5 +1,5 @@
 /**
- * Compara results/direct.json vs results/jev.json: tokens, costo, ahorro. El wow del acto 2.
+ * Compara results/direct.json vs results/jev.json: tokens, costo, ahorro. El wow de la demo 3.
  *   npm run compare
  */
 import { readFileSync, existsSync } from "node:fs";

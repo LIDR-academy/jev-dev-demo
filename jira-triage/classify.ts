@@ -8,7 +8,7 @@ export const TEAM_LEADS: Record<string, string | undefined> = {
   datos: process.env.LEAD_DATOS,
 };
 
-/** Las cuatro preguntas tipadas del acto 1. Opciones cerradas; Jev elige una y da probabilidad. */
+/** Las cuatro preguntas tipadas de la demo 1. Opciones cerradas; Jev elige una y da probabilidad. */
 export const TICKET_QUESTIONS = {
   tipo: choice("¿Qué tipo de issue es?", {
     bug: "Algo que antes funcionaba y ahora falla",

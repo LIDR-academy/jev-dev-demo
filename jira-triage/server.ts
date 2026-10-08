@@ -1,7 +1,7 @@
 /**
  * Servidor de webhooks. Sin Express: node:http.
  *   POST /webhook/jira    ← Jira "Issue created"  → Jev → actualiza el ticket
- *   POST /webhook/github  ← GitHub "pull_request" → Jev → ruta + comentario en la PR (acto 2 en vivo, opcional)
+ *   POST /webhook/github  ← GitHub "pull_request" → Jev → ruta + comentario en la PR (demo 3 en vivo, opcional)
  *   GET  /health
  *
  * npm run server            (real)

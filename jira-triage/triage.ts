@@ -1,5 +1,5 @@
 /**
- * Acto 1 en vivo desde Claude Code: Claude crea el issue con el MCP de Atlassian y este script lo clasifica con Jev.
+ * Demo 1 en vivo desde Claude Code: Claude crea el issue con el MCP de Atlassian y este script lo clasifica con Jev.
  *   npm run triage -- KAN-130            → lee el issue, Jev lo clasifica, escribe tipo, prioridad, etiquetas y comentario
  *   npm run triage -- KAN-130 KAN-131    → varios
  *   npm run triage -- KAN-130 --mock     → sin Jev ni Jira

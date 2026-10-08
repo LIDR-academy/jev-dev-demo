@@ -21,15 +21,15 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
   const d = JSON.parse(readFileSync(`results/${f}`, "utf8"));
   if (f === "triage.json") {
     const jt = d.tokens ?? d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
-    rows.push({ ejecucion: "Acto 1 · triage de Jira", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
+    rows.push({ ejecucion: "Demo 1 · triage de Jira", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
   } else if (f === "triage-vivo.json") {
     const jt = d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
-    rows.push({ ejecucion: "Acto 1 · triage en vivo (MCP)", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
+    rows.push({ ejecucion: "Demo 1 · triage en vivo (MCP)", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
   } else if (f === "code-health.json") {
     const ex = d.findings.filter((x: any) => x.explanation);
     const llmIn = ex.reduce((s: number, x: any) => s + x.explanation.input_tokens, 0), llmOut = ex.reduce((s: number, x: any) => s + x.explanation.output_tokens, 0);
     const llmUsd = cost(LARGE, llmIn, llmOut);
-    rows.push({ ejecucion: `Acto 2 · pre-vuelo ${d.ticket ?? ""}`, at: d.at, unidades: d.findings.length, jevCalls: d.findings.length, jevTokens: d.jevTokens, jevUsd: d.jevCost, llmCalls: ex.length, llmIn, llmOut, llmUsd, totalUsd: d.jevCost + llmUsd, ms: d.jevMs, mock: d.mock });
+    rows.push({ ejecucion: `Demo 2 · pre-vuelo ${d.ticket ?? ""}`, at: d.at, unidades: d.findings.length, jevCalls: d.findings.length, jevTokens: d.jevTokens, jevUsd: d.jevCost, llmCalls: ex.length, llmIn, llmOut, llmUsd, totalUsd: d.jevCost + llmUsd, ms: d.jevMs, mock: d.mock });
   } else if (f === "direct.json" || f === "jev.json") {
     let llmIn = 0, llmOut = 0, llmUsd = 0, llmCalls = 0, jevTokens = 0;
     for (const r of d.results) {
@@ -38,7 +38,7 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
       jevTokens += r.decision?.jevTokens ?? 0;
     }
     const jevUsd = (jevTokens / 1e6) * price(JEV).input_per_m;
-    rows.push({ ejecucion: `Acto 3 · revisión de PRs (${d.mode})`, at: d.at, unidades: d.results.length, jevCalls: d.mode === "jev" ? d.results.length : 0, jevTokens, jevUsd, llmCalls, llmIn, llmOut, llmUsd, totalUsd: jevUsd + llmUsd, ms: d.totalMs, mock: d.mock });
+    rows.push({ ejecucion: `Demo 3 · revisión de PRs (${d.mode})`, at: d.at, unidades: d.results.length, jevCalls: d.mode === "jev" ? d.results.length : 0, jevTokens, jevUsd, llmCalls, llmIn, llmOut, llmUsd, totalUsd: jevUsd + llmUsd, ms: d.totalMs, mock: d.mock });
   }
 }
 

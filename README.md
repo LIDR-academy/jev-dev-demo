@@ -1,6 +1,6 @@
 # jev-dev-demo
 
-**Jev decide, el LLM razona.** Tres actos sobre el mismo patrón:
+**Jev decide, el LLM razona.** Tres demos sobre el mismo patrón:
 
 > estado → pregunta tipada → Jev → probabilidad → **tu código decide** → acción
 
@@ -14,9 +14,9 @@ Sin dependencias. **Node 22.18+** corre TypeScript directo, trae `fetch` y lee `
 git clone <este-repo> && cd jev-dev-demo
 cp .env.example .env            # llena las llaves (o ensaya sin ellas con --mock)
 npm test                        # 10 pruebas de los umbrales
-npm run batch -- --mock                                  # acto 1 sin Jev ni Jira
-npm run scan -- --ticket=T03 --explain --mock            # acto 2 sin llaves
-npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock && npm run compare   # acto 3 sin llaves
+npm run batch -- --mock                                  # demo 1 sin Jev ni Jira
+npm run scan -- --ticket=T03 --explain --mock            # demo 2 sin llaves
+npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock && npm run compare   # demo 3 sin llaves
 npm run costs                                            # coste de cada ejecución
 ```
 
@@ -27,17 +27,17 @@ npm run costs                                            # coste de cada ejecuci
 | `shared/jev.ts` | Cliente de Jev sobre `fetch` (`POST /v1/systemone`). Helpers `choice`, `noul`, `score`. Modo mock con heurísticas para ensayar. |
 | `shared/thresholds.ts` | **La función que señalas en pantalla.** `decide()` convierte probabilidades en `apply` / `apply_and_flag` / `escalate`. `routeFor()` convierte complejidad + dinero en `rules` / `haiku` / `sonnet`. |
 | `shared/ui.ts` | Colores y tablas de consola legibles desde lejos. |
-| `jira-triage/classify.ts` | Las 4 preguntas tipadas del acto 1 y el comentario que Jev deja en el ticket. |
+| `jira-triage/classify.ts` | Las 4 preguntas tipadas de la demo 1 y el comentario que Jev deja en el ticket. |
 | `jira-triage/jira.ts` | Cliente de Jira Cloud REST v3. Mapeo de opciones de Jev a tipos/prioridades de Jira. |
 | `jira-triage/server.ts` | Servidor de webhooks (`node:http`): `/webhook/jira`, `/webhook/github`, `/health`. |
 | `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
 | `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. |
-| `sample-app/` | Módulo de pagos de la tienda de los tickets (TypeScript). Trae **7 bugs sembrados** documentados en `data/bugs-sembrados.json` y 3 funciones limpias de control. Es el código que "vas a tocar" en el acto 2. |
+| `sample-app/` | Módulo de pagos de la tienda de los tickets (TypeScript). Trae **7 bugs sembrados** documentados en `data/bugs-sembrados.json` y 3 funciones limpias de control. Es el código que "vas a tocar" en la demo 2. |
 | `data/tickets-files.json` | Qué archivos de `sample-app/` toca cada ticket (T01, T03, T11, T16). |
-| `code-health/scan.ts` | **Acto 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |
+| `code-health/scan.ts` | **Demo 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |
 | `code-health/split.ts` | Particionador de funciones sin AST + señales (líneas, awaits, efectos, catch sospechoso, literales, parámetros mutados). |
 | `code-health/explain.ts` | Claude explica una función marcada y propone el refactor mínimo. |
-| `scripts/costs.ts` | **Costes por ejecución**: tokens y USD de Jev y LLM en cada acto, total de la demo. |
+| `scripts/costs.ts` | **Costes por ejecución**: tokens y USD de Jev y LLM en cada demo, total de la demo. |
 | `.claude/skills/pre-vuelo/` | Skill de Claude Code `/pre-vuelo T03`: corre el escaneo y lo presenta con recomendación de orden. |
 | `.claude/skills/costos/` | Skill `/costos`: explica el coste de cada ejecución en lenguaje natural. |
 | `llm-router/router.ts` | Una llamada a Jev por PR: `complejidad` + `touches_money`. |
@@ -66,7 +66,7 @@ npm run costs                                            # coste de cada ejecuci
 | Variable | Dónde |
 | --- | --- |
 | `TYPESAFE_API_KEY` | Consola de TypeSafe AI → API keys. Carga unos dólares; la demo completa cuesta centavos. |
-| `ANTHROPIC_API_KEY` | console.anthropic.com. El acto 2 en modo `direct` gasta ~$0.20 por ejecución con Sonnet. |
+| `ANTHROPIC_API_KEY` | console.anthropic.com. La demo 3 en modo `direct` gasta ~$0.20 por ejecución con Sonnet. |
 | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` | id.atlassian.com → Seguridad → API tokens. |
 | `JIRA_TEAM_FIELD_ID` | Id del campo custom "Equipo" (ver abajo). Si no lo creas, déjalo vacío y el equipo solo aparece en el comentario. |
 | `LEAD_*` | `accountId` de Jira de cada lead (opcional). Sin ellos no se asigna, solo se clasifica. |
@@ -88,7 +88,7 @@ Tres caminos; el primero es el bueno:
 - **`npm run seed -- --done=8`**: los crea por API con etiqueta `batch`, sin clasificar, y mueve los últimos 8 a **Listo** con un comentario de "sprint anterior". El tablero parece un proyecto con historia, no un lote recién importado. `batch --no-create` ignora los que ya están en Listo.
 - **Claude en Chrome**, uno por uno. Solo si lo anterior falla.
 
-### 3b. Acto 2: los bugs del código que vas a tocar
+### 3b. Demo 2: los bugs del código que vas a tocar
 
 El código vive en `sample-app/` dentro de este repo: un módulo de pagos de la misma tienda de los tickets, legible en pantalla y fácil de replantear en Claude Code. Tiene 7 bugs sembrados (`data/bugs-sembrados.json`) y 3 funciones limpias de control. Frente a la audiencia se llaman solo "bugs"; que los sembramos se dice en el cierre.
 
@@ -156,7 +156,7 @@ npm run compare
 npm run show-review -- PR-17099
 ```
 
-Cronométralo dos veces, una con hotspot del celular. Graba ambos actos como respaldo.
+Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como respaldo.
 
 ## El día de la demo (30 min: 10 + 8 + 8 + 4)
 
@@ -168,18 +168,18 @@ Cronométralo dos veces, una con hotspot del celular. Graba ambos actos como res
 | 5 | Abrir el ticket | Comentario de Jev con las tres decisiones y su % |
 | 6 | `npm run batch -- --no-create` | 22 líneas en ~3 s, tabla, costo < 1 centavo |
 | 8 | Filtro `labels = revisar` | Los 3 ambiguos escalados |
-| **10** | **Acto 2.** Abres el ticket T03 "Reembolso parcial se registra como total" y `sample-app/payments/refund.ts` | "Antes de tocar esto, ¿qué bugs ya hay aquí?" |
+| **10** | **Demo 2.** Abres el ticket T03 "Reembolso parcial se registra como total" y `sample-app/payments/refund.ts` | "Antes de tocar esto, ¿qué bugs ya hay aquí?" |
 | 11 | `npm run scan -- --ticket=T03` | 15 funciones en 300 ms: 7 marcadas, 8 limpias, con % y severidad |
 | 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code) | Claude explica solo las 7: la de 61 líneas con 7 trabajos, el `catch` que devuelve éxito, el 90 % que marca como reembolsado | 
 | 16 | Señalas `sendRefundEmail` y `updateOrderStatus` | "Estas no gastaron un token. Jev dijo que estaban limpias." |
-| 17 | `npm run costs` | Acto 1 y acto 2 en centavos; Jev vs LLM |
-| **18** | **Acto 3.** Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya calculado | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
+| 17 | `npm run costs` | Demo 1 y demo 2 en centavos; Jev vs LLM |
+| **18** | **Demo 3.** Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya calculado | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
 | 19 | VS Code: `llm-router/router.ts` | Una pregunta, tres caminos |
 | 20 | `npm run review -- --mode=jev --data=data/prs-fork.json --comment` | Terminal: cada PR con ruta y confianza. Navegador: los comentarios aparecen en las PRs |
 | 23 | `npm run compare` | Tabla lado a lado. Silencio. Luego el número |
 | 25 | `npm run show-review -- PR-<fork de 17099>` | La PR de pagos recibió la misma revisión en ambos modos |
 | **26** | **Cierre.** `npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json` | Un plugin de Claude Code que usa Jev, revisado por un router que usa Jev. Mismo patrón |
-| 28 | Patrón en una diapositiva + "los bugs del acto 2 los sembramos nosotros; el escáner no lo sabía" | "Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código." |
+| 28 | Patrón en una diapositiva + "los bugs de la demo 2 los sembramos nosotros; el escáner no lo sabía" | "Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código." |
 | 29 | `npm run costs` final | Lo que costó toda la demo |
 
 ## Modos mock
@@ -201,6 +201,6 @@ También por variable: `JEV_MOCK=1`, `ANTHROPIC_MOCK=1`, `JIRA_MOCK=1`.
 
 ## Límites que conviene decir en voz alta
 
-- Jev no explica ni razona: no sustituye la revisión de código ni el análisis de un bug. Elige entre opciones que tú definiste. En el acto 2, Jev dice **dónde** mirar; Claude dice **qué** está mal.
+- Jev no explica ni razona: no sustituye la revisión de código ni el análisis de un bug. Elige entre opciones que tú definiste. En la demo 2, Jev dice **dónde** mirar; Claude dice **qué** está mal.
 - Como cualquier modelo, es vulnerable a texto malicioso dentro del ticket o la PR. Por eso los umbrales y la revisión humana viven en tu código.
 - El ahorro depende de la mezcla de PRs. Di el número que salga.
