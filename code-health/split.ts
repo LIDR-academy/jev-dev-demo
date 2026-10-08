@@ -5,15 +5,31 @@
 export type Fn = { name: string; params: string[]; source: string; lines: number; startLine: number };
 
 const HEAD = /^(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)|^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(([^)]*)\)\s*(?::[^=]*)?=>/;
+// Método de clase (indentado): [modificadores] nombre(params) [: tipo] {   — también con params en varias líneas
+const METHOD = /^\s+(?:(?:public|private|protected|static|async|override|readonly)\s+)*([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(/;
+const NOT_METHOD = new Set(["if", "for", "while", "switch", "catch", "return", "await", "function", "constructor", "super", "new", "typeof", "else"]);
 
-export function splitFunctions(src: string): Fn[] {
+export function splitFunctions(src: string, opts: { methods?: boolean } = { methods: true }): Fn[] {
   const lines = src.split("\n");
   const out: Fn[] = [];
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(HEAD);
-    if (!m) continue;
-    const name = m[1] ?? m[3];
-    const params = (m[2] ?? m[4] ?? "").split(",").map((p) => p.trim().split(/[:=]/)[0].trim()).filter(Boolean);
+    let m = lines[i].match(HEAD);
+    let name: string, paramsRaw: string;
+    if (m) {
+      name = m[1] ?? m[3];
+      paramsRaw = m[2] ?? m[4] ?? "";
+    } else if (opts.methods) {
+      const mm = lines[i].match(METHOD);
+      if (!mm || NOT_METHOD.has(mm[1])) continue;
+      // Debe abrir cuerpo con "{" en esta línea o en las siguientes 6 (firma multilínea); si aparece ";" antes, es una declaración de interfaz
+      let k = i, head = "";
+      for (; k < Math.min(lines.length, i + 7); k++) { head += lines[k] + "\n"; if (/\{\s*$/.test(lines[k]) || /\)\s*(?::[^{;]*)?\{/.test(lines[k])) break; if (/;\s*$/.test(lines[k])) { k = -1; break; } }
+      if (k === -1 || k >= Math.min(lines.length, i + 7)) continue;
+      if (/^\s*(if|for|while|switch|catch)\b/.test(lines[i])) continue;
+      name = mm[1];
+      paramsRaw = (head.match(/\(([\s\S]*?)\)\s*(?::|\{)/) ?? [, ""])[1] ?? "";
+    } else continue;
+    const params = paramsRaw.replace(/\n/g, " ").split(",").map((p) => p.trim().split(/[:=]/)[0].replace(/^(\.\.\.|@\w+\(\)\s*)/, "").trim()).filter((p) => p && /^[A-Za-z_$]/.test(p));
     // cuerpo: desde la primera { hasta que las llaves cierren
     let depth = 0, started = false, j = i;
     for (; j < lines.length; j++) {
