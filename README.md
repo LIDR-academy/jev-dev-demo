@@ -15,7 +15,7 @@ git clone <este-repo> && cd jev-dev-demo
 cp .env.example .env            # llena las llaves (o ensaya sin ellas con --mock)
 npm test                        # 10 pruebas de los umbrales
 npm run batch -- --mock                                  # demo 1 sin Jev ni Jira
-npm run scan -- --ticket=T03 --explain --mock            # demo 2 sin llaves
+npm run scan -- --ticket=T03-sample --explain --mock     # demo 2 sin llaves ni Medusa
 npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock && npm run compare   # demo 3 sin llaves
 npm run costs                                            # coste de cada ejecución
 ```
@@ -32,8 +32,9 @@ npm run costs                                            # coste de cada ejecuci
 | `jira-triage/server.ts` | Servidor de webhooks (`node:http`): `/webhook/jira`, `/webhook/github`, `/health`. |
 | `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
 | `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. |
-| `sample-app/` | Módulo de pagos de la tienda de los tickets (TypeScript). Trae **7 bugs sembrados** documentados en `data/bugs-sembrados.json` y 3 funciones limpias de control. Es el código que "vas a tocar" en la demo 2. |
-| `data/tickets-files.json` | Qué archivos de `sample-app/` toca cada ticket (T01, T03, T11, T16). |
+| `../medusa-fork` | Clon de `LIDR-academy/medusa` (ruta en `MEDUSA_PATH`). Es el código que "vas a tocar" en la demo 2. |
+| `data/tickets-files.json` | Qué archivos toca cada ticket. `T03` → Medusa; `T01-sample`, `T03-sample`, `T11-sample`, `T16-sample` → `sample-app/`. |
+| `sample-app/` | Módulo de pagos con **7 bugs sembrados** (`data/bugs-sembrados.json`) y 3 funciones de control. Para ensayar la demo 2 sin Medusa ni llaves. |
 | `code-health/scan.ts` | **Demo 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |
 | `code-health/split.ts` | Particionador de funciones sin AST + señales (líneas, awaits, efectos, catch sospechoso, literales, parámetros mutados). |
 | `code-health/explain.ts` | Claude explica una función marcada y propone el refactor mínimo. |
@@ -90,26 +91,30 @@ Tres caminos; el primero es el bueno:
 
 ### 3b. Demo 2: los bugs del código que vas a tocar
 
-El código vive en `sample-app/` dentro de este repo: un módulo de pagos de la misma tienda de los tickets, legible en pantalla y fácil de replantear en Claude Code. Tiene 7 bugs sembrados (`data/bugs-sembrados.json`) y 3 funciones limpias de control. Frente a la audiencia se llaman solo "bugs"; que los sembramos se dice en el cierre.
-
-| Bug | Dónde | Qué es | Ticket al que pega |
-| --- | --- | --- | --- |
-| B1 | `refund.ts` · `processRefund` | Una función, siete trabajos (valida, calcula, cobra, actualiza, notifica, audita, mide). Rompe SRP. | T03 |
-| B2 | `refund.ts` · `processRefund` | Muta `order` (el parámetro) aunque el reembolso falle a medias. | T03 |
-| B3 | `refund.ts` · `processRefund` | Al 90 % del total marca el pedido como reembolsado completo. | T03 (es el ticket) |
-| B4 | `gateway.ts` · `chargeGateway` | El `catch` devuelve `ok: true` con un id inventado cuando la red falla. | T01, T16 |
-| B5 | `tax.ts` · `calculateTax` | `0.16` y `1.16` sin nombre, en cuatro sitios. | T03, T11 |
-| B6 | `totals.ts` · `splitTotal` | Desglosa IVA distinto que `removeTax`: centavos que no cuadran. | T03 |
-| B7 | `totals.ts` · `applyCoupon` | Registra y descuenta el cupón aunque ya estuviera aplicado. | T11 (es el ticket) |
+El código es **Medusa real**: el ticket T03 ("Reembolso parcial se registra como total") toca el servicio de pagos y el proveedor de Stripe del fork `LIDR-academy/medusa`. Son 58 funciones y métodos en dos archivos de producción, sin bugs sembrados.
 
 ```bash
+gh repo clone LIDR-academy/medusa ../medusa-fork -- --depth 1   # una vez; o define MEDUSA_PATH en .env
 npm run scan -- --ticket=T03            # Jev marca; tabla por función
-npm run scan -- --ticket=T03 --explain  # además Claude explica solo lo marcado
+npm run scan -- --ticket=T03 --explain  # además Claude explica solo lo marcado (o /pre-vuelo T03)
 ```
 
-Por cada función Jev responde en una sola llamada: ¿una o varias responsabilidades? ¿traga errores? ¿muta la entrada? ¿números mágicos? ¿lógica duplicada (viendo las funciones parecidas)? y una severidad de 0 a 3. Las preguntas y sus `criteria` están en `code-health/scan.ts`; si Jev clasifica mal, se afinan ahí.
+En el ensayo (commit `d436d2fb` de `develop`) Jev marcó 1 o 2 de 58, siempre por errores tragados, y Claude las confirmó. `roundToCurrencyPrecision` sale marcada siempre (~81 %); `refundPayment` queda en el límite del umbral (~60 %) y a veces entra:
 
-Para cambiar los bugs o agregar otros: edita `sample-app/`, actualiza `data/bugs-sembrados.json` (el escaneo se autoevalúa contra él) y `data/tickets-files.json`. Un prompt para Claude Code basta: "siembra en sample-app un bug de tipo X en la función Y y regístralo en bugs-sembrados.json".
+| Función | Archivo | Qué encontró |
+| --- | --- | --- |
+| `roundToCurrencyPrecision` | `payment/src/services/payment-module.ts` | El `catch {}` vacío esconde un `TypeError`: con monedas sin decimales (JPY) `split(".")[1]` no existe y el monto se queda **sin redondear**. Se usa al calcular capturas. Bug latente real. |
+| `refundPayment` | `payment-stripe/src/core/stripe-base.ts` | Se traga en silencio el error "ya reembolsado" y devuelve éxito: intencional, pero sin registro ni aviso. |
+
+Para enseñar el bug de JPY en vivo, la misma lógica en una línea:
+
+```bash
+node -e 'for (const c of ["USD","JPY"]) { try { console.log(c, Intl.NumberFormat(undefined,{style:"currency",currency:c}).format(0.1111111).split(".")[1].length, "decimales") } catch (e) { console.log(c, "→", e.constructor.name, "(el catch de Medusa lo esconde)") } }'
+```
+
+Por cada función Jev responde en una sola llamada: ¿una o varias responsabilidades? ¿traga errores? ¿muta la entrada? ¿números mágicos? ¿lógica duplicada (viendo las funciones parecidas)? y una severidad de 0 a 3. Las preguntas y sus `criteria` están en `code-health/scan.ts`; si Jev clasifica mal, se afinan ahí, no en los umbrales.
+
+**Ensayo sin Medusa ni llaves.** `sample-app/` es un módulo de pagos con 7 bugs sembrados (`data/bugs-sembrados.json`) y 3 funciones limpias de control. `npm run scan -- --ticket=T03-sample --explain --mock` corre todo sin red y se autoevalúa contra los bugs sembrados (debe dar 6/6 y 0 falsos positivos). También sirve de prueba de regresión cuando cambias los `criteria`.
 
 ### 4. PRs reales
 
@@ -168,10 +173,11 @@ Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como 
 | 5 | Abrir el ticket | Comentario de Jev con las tres decisiones y su % |
 | 6 | `npm run batch -- --no-create` | 22 líneas en ~3 s, tabla, costo < 1 centavo |
 | 8 | Filtro `labels = revisar` | Los 3 ambiguos escalados |
-| **10** | **Demo 2.** Abres el ticket T03 "Reembolso parcial se registra como total" y `sample-app/payments/refund.ts` | "Antes de tocar esto, ¿qué bugs ya hay aquí?" |
-| 11 | `npm run scan -- --ticket=T03` | 15 funciones en 300 ms: 7 marcadas, 8 limpias, con % y severidad |
-| 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code) | Claude explica solo las 7: la de 61 líneas con 7 trabajos, el `catch` que devuelve éxito, el 90 % que marca como reembolsado | 
-| 16 | Señalas `sendRefundEmail` y `updateOrderStatus` | "Estas no gastaron un token. Jev dijo que estaban limpias." |
+| **10** | **Demo 2.** Abres el ticket T03 "Reembolso parcial se registra como total" y, en VS Code, `payment-module.ts` de Medusa (1,468 líneas) | "Esto es Medusa real. Antes de tocarlo, ¿dónde están los problemas?" |
+| 11 | `npm run scan -- --ticket=T03` | 58 funciones en ~2 s: 1 o 2 marcadas, el resto limpias, con % y severidad |
+| 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code) | Claude explica solo las marcadas: el `catch` vacío de `roundToCurrencyPrecision` (y, si entra, el "ya reembolsado" que Stripe se traga) |
+| 15 | El `node -e` de JPY (sección 3b) | `JPY → TypeError`: el bug latente que el `catch` esconde, en vivo |
+| 16 | Señalas las 57 limpias | "Estas no gastaron un token. Jev dijo que estaban limpias." |
 | 17 | `npm run costs` | Demo 1 y demo 2 en centavos; Jev vs LLM |
 | **18** | **Demo 3.** Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya calculado | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
 | 19 | VS Code: `llm-router/router.ts` | Una pregunta, tres caminos |
@@ -179,7 +185,7 @@ Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como 
 | 23 | `npm run compare` | Tabla lado a lado. Silencio. Luego el número |
 | 25 | `npm run show-review -- PR-<fork de 17099>` | La PR de pagos recibió la misma revisión en ambos modos |
 | **26** | **Cierre.** `npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json` | Un plugin de Claude Code que usa Jev, revisado por un router que usa Jev. Mismo patrón |
-| 28 | Patrón en una diapositiva + "los bugs de la demo 2 los sembramos nosotros; el escáner no lo sabía" | "Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código." |
+| 28 | Patrón en una diapositiva + "en la demo 2 nadie sabía que ese bug estaba en Medusa; Jev señaló una función de 58 y ahí estaba" | "Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código." |
 | 29 | `npm run costs` final | Lo que costó toda la demo |
 
 ## Modos mock

@@ -9,7 +9,7 @@ Patrón: Jev decide qué funciones merecen atención (milisegundos, centavos); C
 
 ## Pasos
 
-1. Identifica el ticket (`T03`, `DEMO-31`…) o los archivos. Si es un ticket de `data/tickets.json`, usa `data/tickets-files.json`; si no está mapeado, busca en el repo los archivos relacionados con el título del ticket y propón la lista antes de escanear.
+1. Identifica el ticket (`T03`, `DEMO-31`…) o los archivos. Si es un ticket de `data/tickets.json`, usa `data/tickets-files.json` (`T03` apunta a Medusa en `MEDUSA_PATH`, por defecto `../medusa-fork`; los `-sample` a `sample-app/`); si no está mapeado, busca en el repo los archivos relacionados con el título del ticket y propón la lista antes de escanear.
 2. Corre `npm run scan -- --ticket=<id> --explain` (o `--files=a.ts,b.ts`). Si no hay llaves en `.env`, agrega `--mock` y dilo.
 3. Lee `results/code-health.json`. Presenta:
    - Una tabla corta: función, archivo, lo que marcó Jev con su %, severidad.
