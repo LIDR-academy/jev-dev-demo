@@ -10,6 +10,7 @@
  * Solo lo que Jev marca con probabilidad alta va al LLM. Jev encuentra dónde buscar; Claude encuentra qué.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { askJev, choice, noul, score, jevCost, MOCK as JEV_MOCK } from "../shared/jev.ts";
 import { splitFunctions, cheapSignals, similarTo, type Fn } from "./split.ts";
 import { explainFinding, LLM_MOCK } from "./explain.ts";
@@ -84,15 +85,26 @@ for (const f of files) for (const fn of splitFunctions(readFileSync(f, "utf8")))
 console.log(dim(`${all.length} funciones en ${files.length} archivos`));
 
 // 2) Jev por función, en paralelo
+// Caché de respuestas de Jev por función (results/.scan-cache.json): así `--explain` reutiliza lo que Jev dijo en el
+// escaneo anterior y los números coinciden en pantalla. npm run reset la borra; --fresh la ignora.
+const CACHE_FILE = "results/.scan-cache.json";
+const cache: Record<string, any> = !JEV_MOCK && !process.argv.includes("--fresh") && existsSync(CACHE_FILE) ? JSON.parse(readFileSync(CACHE_FILE, "utf8")) : {};
+let reused = 0;
+async function askJevCached(state: any) {
+  const key = createHash("sha1").update(JSON.stringify([state, QUESTIONS, process.env.JEV_MODEL ?? ""])).digest("hex");
+  if (cache[key]) { reused++; return cache[key]; }
+  const r = await askJev(state, QUESTIONS, "demo-prevuelo");
+  if (!JEV_MOCK) cache[key] = { answers: r.answers, ms: r.ms, usage: r.usage };
+  return r;
+}
+
 const t0 = performance.now();
 const findings: Finding[] = await Promise.all(
   all.map(async ({ file, fn }) => {
     const signals = cheapSignals(fn);
     const similar = similarTo(fn, all.map((a) => a.fn));
-    const r = await askJev(
-      { file, function: fn.name, lines: fn.lines, params: fn.params, signals, similar_to: similar.map((s) => ({ name: s.name, lines: s.lines, head: s.source.split("\n").slice(0, 6).join("\n") })), source: fn.source.slice(0, 6000) },
-      QUESTIONS,
-      "demo-prevuelo"
+    const r = await askJevCached(
+      { file, function: fn.name, lines: fn.lines, params: fn.params, signals, similar_to: similar.map((s) => ({ name: s.name, lines: s.lines, head: s.source.split("\n").slice(0, 6).join("\n") })), source: fn.source.slice(0, 6000) }
     );
     const a = r.answers;
     const flags: { key: string; p: number }[] = [];
@@ -101,7 +113,10 @@ const findings: Finding[] = await Promise.all(
     return { file, fn, signals, answers: a, flags, severity: a.severidad.score, jevMs: r.ms, jevTokens: r.usage.input_tokens };
   })
 );
-const jevMs = Math.round(performance.now() - t0);
+// Si todo salió de la caché, el tiempo que cuenta es el del escaneo original (la llamada más lenta, en paralelo).
+const jevMs = reused === findings.length ? Math.max(...findings.map((f) => f.jevMs)) : Math.round(performance.now() - t0);
+if (!JEV_MOCK) { mkdirSync("results", { recursive: true }); writeFileSync(CACHE_FILE, JSON.stringify(cache)); }
+if (reused) console.log(dim(`(${reused} respuestas de Jev reutilizadas del escaneo anterior; --fresh para volver a preguntar)`));
 
 // 3) Tabla
 findings.sort((x, y) => y.severity - x.severity || y.flags.length - x.flags.length);
@@ -127,8 +142,10 @@ ${bold("Jev")}  ${findings.length} funciones · ${num(jevMs)} ms total · ${num(
 if (EXPLAIN && flagged.length) {
   console.log(bold(`Claude explica ${flagged.length} funciones marcadas`), dim("(las limpias no gastan tokens)\n"));
   let llmIn = 0, llmOut = 0;
-  for (const f of flagged) {
-    const e = await explainFinding(f.file, f.fn, f.flags, ticketTitle);
+  // En paralelo: la espera es la de la explicación más lenta, no la suma.
+  const explanations = await Promise.all(flagged.map((f) => explainFinding(f.file, f.fn, f.flags, ticketTitle)));
+  for (const [i, f] of flagged.entries()) {
+    const e = explanations[i];
     f.explanation = e; llmIn += e.input_tokens; llmOut += e.output_tokens;
     console.log(`${magenta("■")} ${bold(f.fn.name)} ${dim(`(${short(f.file)})`)} ${gray(`${e.model} · ${e.input_tokens} in / ${e.output_tokens} out`)}`);
     console.log("  " + e.text.split("\n").join("\n  ") + "\n");

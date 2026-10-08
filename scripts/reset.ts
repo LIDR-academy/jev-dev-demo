@@ -13,7 +13,7 @@ console.log(green("✓"), "results/ borrado");
 
 if (JIRA_MOCK) { console.log(dim("jira MOCK: no se tocan issues")); process.exit(0); }
 const all = process.argv.includes("--all");
-const jql = all ? `project = ${projectKey}` : `project = ${projectKey} AND (labels = jev OR labels = batch OR labels = revisar)`;
+const jql = all ? `project = ${projectKey}` : `project = ${projectKey} AND (labels = jev OR labels = batch OR labels = revisar OR labels = escalado)`;
 const issues = await searchIssues(jql, 200);
 console.log(bold(`${issues.length} issues a borrar`), dim(`(${jql})`));
 let ok = 0;

@@ -30,7 +30,7 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
     const llmIn = ex.reduce((s: number, x: any) => s + x.explanation.input_tokens, 0), llmOut = ex.reduce((s: number, x: any) => s + x.explanation.output_tokens, 0);
     const llmUsd = cost(LARGE, llmIn, llmOut);
     rows.push({ ejecucion: `Demo 2 · pre-vuelo ${d.ticket ?? ""}`, at: d.at, unidades: d.findings.length, jevCalls: d.findings.length, jevTokens: d.jevTokens, jevUsd: d.jevCost, llmCalls: ex.length, llmIn, llmOut, llmUsd, totalUsd: d.jevCost + llmUsd, ms: d.jevMs, mock: d.mock });
-  } else if (f === "direct.json" || f === "jev.json") {
+  } else if (f === "direct.json" || f === "jev.json" || f === "cierre.json") {
     let llmIn = 0, llmOut = 0, llmUsd = 0, llmCalls = 0, jevTokens = 0;
     for (const r of d.results) {
       const m = r.route === "haiku" ? SMALL : r.route === "sonnet" ? LARGE : "rules";
@@ -38,11 +38,15 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
       jevTokens += r.decision?.jevTokens ?? 0;
     }
     const jevUsd = (jevTokens / 1e6) * price(JEV).input_per_m;
-    rows.push({ ejecucion: `Demo 3 · revisión de PRs (${d.mode})`, at: d.at, unidades: d.results.length, jevCalls: d.mode === "jev" ? d.results.length : 0, jevTokens, jevUsd, llmCalls, llmIn, llmOut, llmUsd, totalUsd: jevUsd + llmUsd, ms: d.totalMs, mock: d.mock });
+    rows.push({ ejecucion: f === "cierre.json" ? "Cierre · fast-jev-compaction" : `Demo 3 · revisión de PRs (${d.mode})`, at: d.at, unidades: d.results.length, jevCalls: d.mode === "jev" ? d.results.length : 0, jevTokens, jevUsd, llmCalls, llmIn, llmOut, llmUsd, totalUsd: jevUsd + llmUsd, ms: d.totalMs, mock: d.mock });
   }
 }
 
-rows.sort((a, b) => a.ejecucion.localeCompare(b.ejecucion));
+// Orden del guion: demos 1, 2, 3 y el cierre al final.
+rows.sort((a, b) => (a.ejecucion.startsWith("Cierre") ? 1 : 0) - (b.ejecucion.startsWith("Cierre") ? 1 : 0) || a.ejecucion.localeCompare(b.ejecucion));
+// --demo=1,2: solo esas demos (en el minuto 17 aún no se presenta la 3, aunque direct.json ya esté calculado)
+const only = process.argv.find((a) => a.startsWith("--demo="))?.split("=")[1]?.split(",");
+if (only) rows.splice(0, rows.length, ...rows.filter((r) => only.some((n) => r.ejecucion.startsWith(`Demo ${n} `))));
 if (process.argv.includes("--json")) { console.log(JSON.stringify({ prices: { [JEV]: price(JEV), [SMALL]: price(SMALL), [LARGE]: price(LARGE) }, rows }, null, 2)); process.exit(0); }
 
 console.log(bold("\nCostes por ejecución"), dim("(USD; precios de llm-router/prices.json)\n"));
@@ -52,4 +56,4 @@ console.log(table(
   { align: ["l", "r", "r", "r", "r", "r", "r", "r", "r", "r"] }
 ));
 const total = rows.reduce((s, r) => s + r.totalUsd, 0);
-console.log(`\n${bold("Total de la demo")}  ${usd(total)}   ${gray(`Jev ${usd(rows.reduce((s, r) => s + r.jevUsd, 0))} · LLM ${usd(rows.reduce((s, r) => s + r.llmUsd, 0))}`)}\n`);
+console.log(`\n${bold(only ? `Total (demo ${only.join(" y ")})` : "Total de la demo")}  ${usd(total)}   ${gray(`Jev ${usd(rows.reduce((s, r) => s + r.jevUsd, 0))} · LLM ${usd(rows.reduce((s, r) => s + r.llmUsd, 0))}`)}\n`);

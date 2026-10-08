@@ -6,7 +6,7 @@ export type Action = "apply" | "apply_and_flag" | "escalate";
 
 export const THRESHOLDS = {
   apply: Number(process.env.THRESHOLD_APPLY ?? 0.7),      // ≥ aplica directo
-  flag: Number(process.env.THRESHOLD_FLAG ?? 0.5),        // ≥ aplica y etiqueta "revisar"
+  flag: Number(process.env.THRESHOLD_FLAG ?? 0.5),        // ≥ aplica y etiqueta "revisar" (bajo esto: escala, etiqueta "escalado")
   needsHuman: Number(process.env.THRESHOLD_HUMAN ?? 0.5), // Jev dice que falta info
 };
 

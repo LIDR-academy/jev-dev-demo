@@ -74,7 +74,8 @@ export async function applyClassification(key: string, c: Classification) {
     if (TEAM_FIELD) fields[TEAM_FIELD] = { value: TEAM_LABEL[c.equipo] ?? c.equipo };
   }
   if (c.assignee) fields.assignee = { accountId: c.assignee };
-  const labels = c.action === "escalate" ? ["revisar"] : c.labels;
+  // "escalado" ≠ "revisar": así el filtro labels = escalado muestra solo los que necesitan a una persona.
+  const labels = c.action === "escalate" ? ["escalado"] : c.labels;
   const update = { labels: labels.map((l) => ({ add: l })) };
 
   if (JIRA_MOCK) return { key, fields, labels, mock: true };

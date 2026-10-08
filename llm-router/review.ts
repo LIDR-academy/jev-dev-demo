@@ -2,7 +2,7 @@
  * Revisa el lote de PRs en dos modos y guarda results/<mode>.json.
  *   npm run review -- --mode=direct   → todas las PRs al modelo grande
  *   npm run review -- --mode=jev      → Jev decide la ruta por PR
- *   opciones: --data=data/prs-real.json (default) | data/prs-fork.json · --concurrency=3 · --mock
+ *   opciones: --data=data/prs-real.json (default) | data/prs-fork.json · --concurrency=3 · --out=results/cierre.json · --mock
  *             --comment  → deja el veredicto del router como comentario en cada PR (necesita GITHUB_TOKEN y PRs en tu fork)
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -67,5 +67,7 @@ ${bold("Resumen")}  ${MODE}
 `);
 
 mkdirSync("results", { recursive: true });
-writeFileSync(`results/${MODE}.json`, JSON.stringify({ at: new Date().toISOString(), mode: MODE, data: DATA, repo, mock: JEV_MOCK || LLM_MOCK, totalMs, results }, null, 2));
-console.log(dim(`→ results/${MODE}.json`));
+// --out: el cierre (fast-jev-compaction) no debe pisar results/jev.json, que usan compare y costs.
+const OUT = arg("out") ?? `results/${MODE}.json`;
+writeFileSync(OUT, JSON.stringify({ at: new Date().toISOString(), mode: MODE, data: DATA, repo, mock: JEV_MOCK || LLM_MOCK, totalMs, results }, null, 2));
+console.log(dim(`→ ${OUT}`));

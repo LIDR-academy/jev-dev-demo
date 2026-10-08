@@ -15,7 +15,8 @@ export function table(headers: string[], rows: (string | number)[][], opts: { al
   return [line("┌", "┬", "┐"), row(headers.map(bold)), line("├", "┼", "┤"), ...rows.map((r) => row(r.map(String))), line("└", "┴", "┘")].join("\n");
 }
 
-export const usd = (n: number) => `$${n.toFixed(4)}`;
+// Bajo una décima de centavo, más decimales: "$0.0000" en pantalla parece gratis o un error.
+export const usd = (n: number) => (n > 0 && n < 0.0001 ? `$${n.toFixed(6)}` : `$${n.toFixed(4)}`);
 export const num = (n: number) => n.toLocaleString("es-MX");
 export const bar = (ratio: number, width = 20) => "█".repeat(Math.round(ratio * width)).padEnd(width, "░");
 

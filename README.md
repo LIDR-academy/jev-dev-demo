@@ -172,21 +172,21 @@ Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como 
 | 3 | En Claude Code: `/triage Pagué con débito y me llegaron dos cargos por el mismo pedido` | Claude crea el issue con el MCP y Jev lo clasifica: `KAN-128 → bug/critica/pagos (89/99/100 %) → apply` |
 | 5 | Abrir el ticket | Comentario de Jev con las tres decisiones y su % |
 | 6 | `npm run batch -- --no-create` | 22 líneas en ~3 s, tabla, costo < 1 centavo |
-| 8 | Filtro `labels = revisar` | Los 3 ambiguos escalados |
+| 8 | Filtro `labels = escalado` | Los 3 ambiguos, escalados a una persona (los marcados para revisar llevan `revisar`) |
 | **10** | **Demo 2.** Abres el ticket T03 "Reembolso parcial se registra como total" y, en VS Code, `payment-module.ts` de Medusa (1,468 líneas) | "Esto es Medusa real. Antes de tocarlo, ¿dónde están los problemas?" |
 | 11 | `npm run scan -- --ticket=T03` | 58 funciones en ~2 s: 1 o 2 marcadas, el resto limpias, con % y severidad |
-| 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code) | Claude explica solo las marcadas: el `catch` vacío de `roundToCurrencyPrecision` (y, si entra, el "ya reembolsado" que Stripe se traga) |
+| 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code). Reutiliza las respuestas de Jev del minuto 11: mismos números, ~7 s | Claude explica solo las marcadas: el `catch` vacío de `roundToCurrencyPrecision` (y, si entra, el "ya reembolsado" que Stripe se traga) |
 | 15 | El `node -e` de JPY (sección 3b) | `JPY → TypeError`: el bug latente que el `catch` esconde, en vivo |
 | 16 | Señalas las 57 limpias | "Estas no gastaron un token. Jev dijo que estaban limpias." |
-| 17 | `npm run costs` | Demo 1 y demo 2 en centavos; Jev vs LLM |
+| 17 | `npm run costs -- --demo=1,2` | Demo 1 y demo 2 en centavos; Jev vs LLM (sin mostrar aún el direct precalculado de la demo 3) |
 | **18** | **Demo 3.** Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya calculado | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
 | 19 | VS Code: `llm-router/router.ts` | Una pregunta, tres caminos |
 | 20 | `npm run review -- --mode=jev --data=data/prs-fork.json --comment` | Terminal: cada PR con ruta y confianza. Navegador: los comentarios aparecen en las PRs |
 | 23 | `npm run compare` | Tabla lado a lado. Silencio. Luego el número |
 | 25 | `npm run show-review -- PR-<fork de 17099>` | La PR de pagos recibió la misma revisión en ambos modos |
-| **26** | **Cierre.** `npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json` | Un plugin de Claude Code que usa Jev, revisado por un router que usa Jev. Mismo patrón |
+| **26** | **Cierre.** `npm run review -- --mode=jev --data=data/prs-fast-jev-compaction.json --out=results/cierre.json --concurrency=6` (~30 s; no pisa `results/jev.json`) | Un plugin de Claude Code que usa Jev, revisado por un router que usa Jev. Mismo patrón |
 | 28 | Patrón en una diapositiva + "en la demo 2 nadie sabía que ese bug estaba en Medusa; Jev señaló una función de 58 y ahí estaba" | "Jev no escribe, Jev elige. Lo que elige lo ejecuta tu código." |
-| 29 | `npm run costs` final | Lo que costó toda la demo |
+| 29 | `npm run costs` final (o `/costos`) | Lo que costó toda la demo, con el cierre al final |
 
 ## Modos mock
 
