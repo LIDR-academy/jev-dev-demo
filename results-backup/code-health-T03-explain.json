@@ -1,0 +1,905 @@
+{
+  "at": "2026-10-08T02:51:45.851Z",
+  "ticket": "T03",
+  "ticketTitle": "Reembolso parcial se registra como total",
+  "files": [
+    "sample-app/payments/refund.ts",
+    "sample-app/payments/totals.ts",
+    "sample-app/payments/tax.ts",
+    "sample-app/payments/notify.ts",
+    "sample-app/orders/status.ts"
+  ],
+  "mock": false,
+  "jevMs": 552,
+  "jevTokens": 17165,
+  "jevCost": 0.00072093,
+  "findings": [
+    {
+      "file": "sample-app/payments/refund.ts",
+      "function": "processRefund",
+      "lines": 61,
+      "flags": [
+        {
+          "key": "varias_responsabilidades",
+          "p": 1
+        },
+        {
+          "key": "muta_entrada",
+          "p": 0.98
+        },
+        {
+          "key": "numero_magico",
+          "p": 0.98
+        }
+      ],
+      "severity": 2.1,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "varias",
+          "confidence": 1,
+          "probabilities": {
+            "varias": 1,
+            "una": 0
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.34
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "severidad": {
+          "type": "score",
+          "score": 2.1,
+          "confidence": 0.69,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.02,
+            "1": 0.07,
+            "2": 0.71,
+            "3": 0.2
+          }
+        }
+      },
+      "jevMs": 217,
+      "jevTokens": 1807,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "**1) Señales**\n- SRP (100 %): **Confirmada.** Una sola función valida (l. 3-11), calcula IVA, llama la pasarela, actualiza el pedido, envía correo, audita y registra métricas.\n- Muta parámetro (98 %): **Confirmada.** `order.refunded = ...` y `order.status = ...` (sección 4).\n- Números mágicos (98 %): **Confirmada.** `1.16` (IVA), `0.9` (umbral), `1000` (auditoría), \"5 a 10 días\".\n\n**2) Bug probable**\nEl `if (order.refunded >= order.total * 0.9)` convierte en \"refunded\" cualquier reembolso parcial ≥90 %. Ese es el origen de la tarea. Además, `order.refunded` ya fue mutado antes de `updateOrderStatus`, así que si falla, el objeto queda inconsistente. Quitar el 0.9 también cambia el correo y `metrics.fullRefunds`.\n\n**3) Refactor mínimo**\n- Extraer `resolveRefundStatus(total, refunded)` con solo `>= total`; eliminar el bloque del 0.9.\n- Constante `IVA_RATE = 1.16`.\n- No mutar: crear `updatedOrder = { ...order, refunded, status }`.\n- Opcional: `buildRefundEmail()`.",
+        "input_tokens": 1991,
+        "output_tokens": 468,
+        "ms": 6281
+      }
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "computeOrderTotal",
+      "lines": 9,
+      "flags": [],
+      "severity": 1.82,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.36,
+          "probabilities": {
+            "varias": 0.32,
+            "una": 0.68
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.06
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.08
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.82,
+          "confidence": 0.48,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.16,
+            "1": 0.04,
+            "2": 0.64,
+            "3": 0.16
+          }
+        }
+      },
+      "jevMs": 245,
+      "jevTokens": 1165
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "applyCoupon",
+      "lines": 7,
+      "flags": [
+        {
+          "key": "varias_responsabilidades",
+          "p": 0.99
+        },
+        {
+          "key": "muta_entrada",
+          "p": 0.98
+        }
+      ],
+      "severity": 1.58,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "varias",
+          "confidence": 0.99,
+          "probabilities": {
+            "una": 0.01,
+            "varias": 0.99
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.12
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.58,
+          "confidence": 0.27,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.21,
+            "1": 0.15,
+            "2": 0.49,
+            "3": 0.15
+          }
+        }
+      },
+      "jevMs": 213,
+      "jevTokens": 1068,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "1) **SRP (99 %): parcialmente confirmada.** La función calcula el descuento (líneas 4-5) y además registra el cupón en `applied` (línea 3, `applied.push`). Son dos responsabilidades, aunque pequeñas; el cálculo en sí es cohesivo.\n\n**Mutación (98 %): confirmada.** `applied.push(coupon.code)` en la línea 3 modifica el array recibido.\n\n2) **Bug probable:** al arreglar el reembolso parcial, quien llame a `applyCoupon` para recalcular totales (p. ej. al reembolsar) volverá a añadir el código a `applied`, duplicándolo o marcando el cupón como consumido otra vez. Además, `coupon.percent` o `amount` en 0 caen al `return subtotal` sin avisar, y con `percent > 100` el resultado es negativo.\n\n3) **Refactor mínimo:**\n- `applyCoupon(subtotal, coupon): number` pura, sin `applied`, con `Math.max(0, …)` también en el porcentaje.\n- `recordCoupon(applied: string[], coupon: Coupon | null): string[]` devuelve un array nuevo (`[...applied, coupon.code]`).\n\nEl llamador original combina ambas solo en el flujo de cobro, no en el de reembolso.",
+        "input_tokens": 991,
+        "output_tokens": 453,
+        "ms": 10529
+      }
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "splitTotal",
+      "lines": 5,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.96
+        },
+        {
+          "key": "logica_duplicada",
+          "p": 0.63
+        }
+      ],
+      "severity": 1.54,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.94,
+          "probabilities": {
+            "una": 0.97,
+            "varias": 0.03
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.63
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.54,
+          "confidence": 0.37,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.25,
+            "1": 0.04,
+            "2": 0.62,
+            "3": 0.09
+          }
+        }
+      },
+      "jevMs": 210,
+      "jevTokens": 1190,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "1) **Números mágicos: confirmado.** Línea 2, `total / 1.16` (IVA 16 % embebido). Es una tasa fija, sin nombre ni configuración. El `2` de `toFixed(2)` también está hardcodeado, pero es menos grave.\n\n**Duplicación con variaciones: descartada.** La función tiene 4 líneas y no repite lógica. Solo hay dos `Number(x.toFixed(2))` casi idénticos en el `return`, lo cual es trivial y no justifica la señal del 63 %.\n\n2) **Bug probable:** en un reembolso parcial, `splitTotal(monto)` aplica 1.16 a un monto que quizá ya viene sin IVA, o lo desglosa de forma independiente al original. Como `tax` se redondea por separado, `subtotal + tax` puede diferir en un centavo del total. Sumar parciales tampoco garantiza coincidir con el total original, y por eso un reembolso parcial puede terminar contabilizado como total.\n\n3) **Refactor mínimo:**\n- `const IVA_RATE = 0.16;`\n- `roundMoney(n)` para centralizar el redondeo.\n- Calcular `tax = roundMoney(total - subtotal)` a partir del subtotal ya redondeado, para que la suma cuadre.\n- Opcional: `splitRefund(partial, original)`, que prorratea sobre el desglose original.",
+        "input_tokens": 946,
+        "output_tokens": 485,
+        "ms": 6838
+      }
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "removeTax",
+      "lines": 4,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.96
+        },
+        {
+          "key": "logica_duplicada",
+          "p": 0.73
+        }
+      ],
+      "severity": 1.43,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 1,
+          "probabilities": {
+            "varias": 0,
+            "una": 1
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.73
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.43,
+          "confidence": 0.31,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.29,
+            "1": 0.05,
+            "2": 0.6,
+            "3": 0.06
+          }
+        }
+      },
+      "jevMs": 209,
+      "jevTokens": 1189,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "1) **Números mágicos (96 %): confirmada.** Línea 2: `total / 1.16` esconde la tasa de IVA del 16 %. También `toFixed(2)` fija los decimales sin nombre ni contexto.\n\n**Lógica duplicada (73 %): descartada.** El archivo solo tiene una función de tres líneas, sin ramas ni variantes repetidas. Puede aparecer duplicación si el dev copia esta función para reembolsos parciales.\n\n2) **Bug probable:** en un reembolso parcial, el dev podría reutilizar `removeTax` sobre el monto parcial o sobre el total. Si la tasa cambia o el producto tiene otra tasa, el desglose será incorrecto. Además, `toFixed` con redondeo por separado puede hacer que subtotal + impuesto ≠ monto reembolsado por un centavo, y el reembolso parcial se registraría como total.\n\n3) **Refactor mínimo:**\n- `const IVA_RATE = 0.16;`\n- `removeTax(total, rate = IVA_RATE)`\n- `roundMoney(n)` para el redondeo\n- `splitTax(total, rate)` que devuelva `{ subtotal, tax }` con `tax = total - subtotal`, para que la suma cuadre siempre.",
+        "input_tokens": 895,
+        "output_tokens": 443,
+        "ms": 6474
+      }
+    },
+    {
+      "file": "sample-app/payments/notify.ts",
+      "function": "sendOrderShippedEmail",
+      "lines": 3,
+      "flags": [],
+      "severity": 1.36,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.86,
+          "probabilities": {
+            "varias": 0.07,
+            "una": 0.93
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.36,
+          "confidence": 0.01,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.35,
+            "1": 0.11,
+            "2": 0.36,
+            "3": 0.18
+          }
+        }
+      },
+      "jevMs": 281,
+      "jevTokens": 1053
+    },
+    {
+      "file": "sample-app/payments/refund.ts",
+      "function": "retryCharge",
+      "lines": 8,
+      "flags": [
+        {
+          "key": "muta_entrada",
+          "p": 0.98
+        }
+      ],
+      "severity": 1.16,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "varias",
+          "confidence": 0.46,
+          "probabilities": {
+            "una": 0.27,
+            "varias": 0.73
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "severidad": {
+          "type": "score",
+          "score": 1.16,
+          "confidence": 0,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.43,
+            "1": 0.06,
+            "2": 0.42,
+            "3": 0.09
+          }
+        }
+      },
+      "jevMs": 204,
+      "jevTokens": 1077,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "1) **Señal confirmada:** la línea `order.paymentId = result.paymentId;` muta el parámetro `order`. Es el único efecto sobre la entrada; `order.total` y `order.id` solo se leen. El 98 % es razonable.\n\n2) **Bug probable:** esta función cobra `order.total` completo y sobrescribe `order.paymentId`. Al arreglar \"reembolso parcial se registra como total\", el desarrollador puede reutilizarla o copiar su patrón y mutar `order` (estado, `paymentId`, monto) desde el flujo de reembolso. Así un reembolso parcial pisaría el pago original y el pedido parecería reembolsado por completo. Además, un reintento perdería el `paymentId` anterior.\n\n3) **Refactor mínimo:**\n- Que `retryCharge` no mute: elimina la asignación y devuelve `{ ok, paymentId }`.\n- Crea `applyPaymentToOrder(order, paymentId): Order`, que devuelva una copia (`{ ...order, paymentId }`), y llámala desde el invocador.\n- Para la tarea, usa una función separada `recordRefund(order, amount): Order` que distinga `amount < order.total` (parcial) de total.",
+        "input_tokens": 970,
+        "output_tokens": 423,
+        "ms": 6048
+      }
+    },
+    {
+      "file": "sample-app/orders/status.ts",
+      "function": "updateOrderStatus",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.95,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.98,
+          "probabilities": {
+            "varias": 0.01,
+            "una": 0.99
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.12
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.95,
+          "confidence": 0.05,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.49,
+            "1": 0.13,
+            "2": 0.32,
+            "3": 0.06
+          }
+        }
+      },
+      "jevMs": 216,
+      "jevTokens": 1062
+    },
+    {
+      "file": "sample-app/payments/notify.ts",
+      "function": "sendRefundEmail",
+      "lines": 8,
+      "flags": [],
+      "severity": 0.94,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.94,
+          "probabilities": {
+            "una": 0.97,
+            "varias": 0.03
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.94,
+          "confidence": 0.07,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.47000000000000003,
+            "1": 0.14,
+            "2": 0.38,
+            "3": 0.01
+          }
+        }
+      },
+      "jevMs": 536,
+      "jevTokens": 1079
+    },
+    {
+      "file": "sample-app/payments/totals.ts",
+      "function": "computeSubtotal",
+      "lines": 5,
+      "flags": [],
+      "severity": 0.89,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.98,
+          "probabilities": {
+            "una": 0.99,
+            "varias": 0.01
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.09
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.36
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.89,
+          "confidence": 0.11,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.53,
+            "1": 0.08,
+            "2": 0.36,
+            "3": 0.03
+          }
+        }
+      },
+      "jevMs": 211,
+      "jevTokens": 1112
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "calculateTax",
+      "lines": 5,
+      "flags": [
+        {
+          "key": "numero_magico",
+          "p": 0.97
+        }
+      ],
+      "severity": 0.77,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.68,
+          "probabilities": {
+            "una": 0.84,
+            "varias": 0.16
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.97
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.58
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.77,
+          "confidence": 0.25,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.61,
+            "1": 0.05,
+            "2": 0.32,
+            "3": 0.02
+          }
+        }
+      },
+      "jevMs": 217,
+      "jevTokens": 1240,
+      "explanation": {
+        "model": "claude-sonnet-5-5",
+        "text": "1) **Números mágicos:** Confirmado, pero solo uno: línea 3, `0.16` (tasa de IVA hardcodeada). El `100` de la línea 4 es redondeo a centavos, no regla de negocio, aunque también conviene nombrarlo. El `0` de la línea 2 es un guard, no es mágico.\n\n2) **Bug probable:** Un reembolso parcial calculará el impuesto sobre el monto reembolsado con la tasa fija, sin relación con el impuesto cobrado originalmente. Esto provoca desajustes por redondeo o si la tasa cambió desde la venta. Además, `subtotal <= 0` devuelve 0 en silencio, así que un reembolso con monto negativo registraría impuesto 0 y podría parecer total o inconsistente.\n\n3) **Refactor mínimo:**\n- `const TAX_RATE = 0.16;` y `const CENTS = 100;`\n- `roundToCents(value: number): number`\n- `calculateRefundTax(refund: number, originalSubtotal: number, originalTax: number): number`, que prorratea: `roundToCents(originalTax * refund / originalSubtotal)`.\n\nAsí `calculateTax` no se usa para reembolsos.",
+        "input_tokens": 900,
+        "output_tokens": 422,
+        "ms": 5886
+      }
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "addTax",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.76,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.8,
+          "probabilities": {
+            "una": 0.9,
+            "varias": 0.1
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.36
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.31
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.76,
+          "confidence": 0.24,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.61,
+            "1": 0.07,
+            "2": 0.27,
+            "3": 0.05
+          }
+        }
+      },
+      "jevMs": 233,
+      "jevTokens": 1077
+    },
+    {
+      "file": "sample-app/payments/tax.ts",
+      "function": "isZeroRated",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.49,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 0.98,
+          "probabilities": {
+            "una": 0.99,
+            "varias": 0.01
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.49,
+          "confidence": 0.5,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.75,
+            "1": 0.02,
+            "2": 0.21,
+            "3": 0.02
+          }
+        }
+      },
+      "jevMs": 333,
+      "jevTokens": 1007
+    },
+    {
+      "file": "sample-app/payments/refund.ts",
+      "function": "getAuditLog",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.29,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 1,
+          "probabilities": {
+            "una": 1,
+            "varias": 0
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.29,
+          "confidence": 0.71,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.8,
+            "1": 0.11,
+            "2": 0.08,
+            "3": 0.01
+          }
+        }
+      },
+      "jevMs": 204,
+      "jevTokens": 981
+    },
+    {
+      "file": "sample-app/orders/status.ts",
+      "function": "getOrderStatus",
+      "lines": 3,
+      "flags": [],
+      "severity": 0.24,
+      "answers": {
+        "responsabilidades": {
+          "type": "choice",
+          "choice": "una",
+          "confidence": 1,
+          "probabilities": {
+            "varias": 0,
+            "una": 1
+          }
+        },
+        "traga_errores": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "muta_entrada": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "numero_magico": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "logica_duplicada": {
+          "type": "noul",
+          "noul": 0.17
+        },
+        "severidad": {
+          "type": "score",
+          "score": 0.24,
+          "confidence": 0.75,
+          "legend": {
+            "0": "Ninguno: la función está limpia",
+            "1": "Bajo: deuda de estilo, no afecta el comportamiento",
+            "2": "Medio: puede producir resultados incorrectos en casos borde",
+            "3": "Alto: produce cobros, estados o montos incorrectos en casos normales"
+          },
+          "probabilities": {
+            "0": 0.84,
+            "1": 0.08,
+            "2": 0.07,
+            "3": 0.01
+          }
+        }
+      },
+      "jevMs": 274,
+      "jevTokens": 1058
+    }
+  ]
+}
