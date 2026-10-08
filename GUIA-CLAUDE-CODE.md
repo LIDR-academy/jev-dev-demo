@@ -21,10 +21,10 @@ Regla para todos los prompts: Claude Code **no debe imprimir llaves en pantalla 
 Estás en la carpeta jev-dev-demo. Lee README.md y GUIA-CLAUDE-CODE.md completos antes de hacer nada.
 Es una demo de 30 minutos que ya funciona en modo mock. No reescribas el código ni cambies la estructura: vamos a configurarlo, conectarlo a servicios reales, publicarlo en GitHub y ensayarlo.
 Reglas: nunca imprimas el contenido de .env ni ninguna llave; nunca hagas commit de .env ni de results/; antes de cada cambio en un archivo .ts dime qué vas a cambiar y por qué.
-Confirma que entendiste el patrón "estado → pregunta tipada → Jev → probabilidad → tu código decide → acción" y corre `node --version`, `npm test`, `npm run batch -- --mock`, `npm run scan -- --ticket=T03-sample --explain --mock` y `npm run costs`. Reporta si algo falla.
+Confirma que entendiste el patrón "estado → pregunta tipada → Jev → probabilidad → tu código decide → acción" y corre `node --version`, `npm test`, `npm run batch -- --mock`, `npm run scan -- --ticket=T03 --explain --mock` y `npm run costs`. Reporta si algo falla.
 ```
 
-**Debe salir:** 10 tests en verde, la tabla de 30 tickets con 3 escalados, el pre-vuelo con 6/6 bugs sembrados detectados y la tabla de costes.
+**Debe salir:** 10 tests en verde, la tabla de 30 tickets con 3 escalados, el pre-vuelo sobre Medusa (58 funciones, pocas marcadas) y la tabla de costes.
 
 ---
 
@@ -105,7 +105,7 @@ Después corre `npm run batch -- --no-create` y confirma que los 22 pendientes q
 ```markdown
 Verifica que existe el clon de Medusa en ../medusa-fork (o en MEDUSA_PATH). Si no, clónalo con `gh repo clone LIDR-academy/medusa ../medusa-fork -- --depth 1`.
 Corre `npm run scan -- --ticket=T03` SIN mock (Jev real, sin LLM) y dime cuántas funciones marcó y cuáles.
-Si marca más de 5 o las marcas son ruido (orquestación normal marcada como "varias responsabilidades"), no toques el escáner ni los umbrales: ajusta las descripciones de los criteria en code-health/scan.ts y vuelve a correr. Después confirma que `npm run scan -- --ticket=T03-sample` sigue en 6/6 con 0 falsos positivos.
+Si marca más de 5 o las marcas son ruido (orquestación normal marcada como "varias responsabilidades"), no toques el escáner ni los umbrales: ajusta las descripciones de los criteria en code-health/scan.ts y vuelve a correr. Después compara contra results-backup/code-health-T03-medusa.json: `roundToCurrencyPrecision` debe seguir marcada.
 Luego corre `npm run scan -- --ticket=T03 --explain` (Claude real) y muéstrame las explicaciones. Verifica en el código de Medusa cualquier bug que Claude afirme antes de llevarlo a escena.
 Guarda la salida en results-backup/ y prueba el skill: `/pre-vuelo T03`.
 ```
@@ -206,6 +206,6 @@ Dame el enlace del repo y un párrafo de 3 líneas para pegar en Slack con el en
 | Jev responde 400 con un campo | "Compara el body que mandamos en shared/jev.ts con la documentación oficial de TypeSafe y ajusta solo los nombres de campo." |
 | Jira 400 al cambiar issuetype | "Cambia ISSUE_TYPE en jira.ts a los nombres exactos que devuelve GET /rest/api/3/project/DEMO, o deja el tipo sin cambiar y pon el tipo solo en el comentario." |
 | El webhook no llega | "Confirma que el túnel sigue vivo, que la URL del webhook en Jira coincide, y manda un POST manual a /webhook/jira con un payload de ejemplo para separar el problema de Jira del problema del servidor." |
-| El pre-vuelo marca funciones de control o no detecta un bug sembrado | "Muéstrame las respuestas de Jev para esa función en results/code-health.json y ajusta solo la descripción del criterio que falló en code-health/scan.ts. No cambies SCAN_THRESHOLD salvo que el ruido sea general." |
+| El pre-vuelo marca ruido o deja de marcar `roundToCurrencyPrecision` | "Muéstrame las respuestas de Jev para esa función en results/code-health.json y ajusta solo la descripción del criterio que falló en code-health/scan.ts. No cambies SCAN_THRESHOLD salvo que el ruido sea general." |
 | El ahorro sale bajo | "Está bien, es el número real. Muéstrame la tabla de rutas: si hay PRs triviales en sonnet, afina los criteria de router.ts; si no, lo dejamos así." |
 | Se acaba el tiempo en la demo | Salta a `npm run compare` con `results-backup/` y muestra la tabla final. |

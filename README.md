@@ -15,7 +15,7 @@ git clone <este-repo> && cd jev-dev-demo
 cp .env.example .env            # llena las llaves (o ensaya sin ellas con --mock)
 npm test                        # 10 pruebas de los umbrales
 npm run batch -- --mock                                  # demo 1 sin Jev ni Jira
-npm run scan -- --ticket=T03-sample --explain --mock     # demo 2 sin llaves ni Medusa
+npm run scan -- --ticket=T03 --explain --mock            # demo 2 sin llaves (necesita ../medusa-fork)
 npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock && npm run compare   # demo 3 sin llaves
 npm run costs                                            # coste de cada ejecución
 ```
@@ -33,8 +33,7 @@ npm run costs                                            # coste de cada ejecuci
 | `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
 | `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. |
 | `../medusa-fork` | Clon de `LIDR-academy/medusa` (ruta en `MEDUSA_PATH`). Es el código que "vas a tocar" en la demo 2. |
-| `data/tickets-files.json` | Qué archivos toca cada ticket. `T03` → Medusa; `T01-sample`, `T03-sample`, `T11-sample`, `T16-sample` → `sample-app/`. |
-| `sample-app/` | Módulo de pagos con **7 bugs sembrados** (`data/bugs-sembrados.json`) y 3 funciones de control. Para ensayar la demo 2 sin Medusa ni llaves. |
+| `data/tickets-files.json` | Qué archivos toca cada ticket. `T03` → Medusa. |
 | `code-health/scan.ts` | **Demo 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |
 | `code-health/split.ts` | Particionador de funciones sin AST + señales (líneas, awaits, efectos, catch sospechoso, literales, parámetros mutados). |
 | `code-health/explain.ts` | Claude explica una función marcada y propone el refactor mínimo. |
@@ -114,7 +113,7 @@ node -e 'for (const c of ["USD","JPY"]) { try { console.log(c, Intl.NumberFormat
 
 Por cada función Jev responde en una sola llamada: ¿una o varias responsabilidades? ¿traga errores? ¿muta la entrada? ¿números mágicos? ¿lógica duplicada (viendo las funciones parecidas)? y una severidad de 0 a 3. Las preguntas y sus `criteria` están en `code-health/scan.ts`; si Jev clasifica mal, se afinan ahí, no en los umbrales.
 
-**Ensayo sin Medusa ni llaves.** `sample-app/` es un módulo de pagos con 7 bugs sembrados (`data/bugs-sembrados.json`) y 3 funciones limpias de control. `npm run scan -- --ticket=T03-sample --explain --mock` corre todo sin red y se autoevalúa contra los bugs sembrados (debe dar 6/6 y 0 falsos positivos). También sirve de prueba de regresión cuando cambias los `criteria`.
+**Ensayo sin llaves.** `npm run scan -- --ticket=T03 --explain --mock` corre el pre-vuelo sobre Medusa sin red (Jev y Claude simulados). Las marcas del mock son heurísticas y no coinciden con las de Jev real. Si cambias los `criteria`, corre sin `--mock` y compara contra `results-backup/code-health-T03-medusa.json`: deben seguir saliendo `roundToCurrencyPrecision` y, en el límite, `refundPayment`.
 
 ### 4. PRs reales
 

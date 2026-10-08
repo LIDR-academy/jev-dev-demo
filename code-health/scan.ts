@@ -2,7 +2,7 @@
  * Demo 2 — Pre-vuelo: bugs que YA existen en el código que vas a tocar para una tarea.
  *
  *   npm run scan -- --ticket=T03            → archivos de data/tickets-files.json para ese ticket
- *   npm run scan -- --files=sample-app/payments/refund.ts,sample-app/payments/tax.ts
+ *   npm run scan -- --files=a.ts,b.ts
  *   npm run scan -- --ticket=T03 --explain  → las funciones marcadas van a Claude para explicación y propuesta de refactor
  *   npm run scan -- --ticket=T03 --mock
  *
@@ -27,7 +27,7 @@ if (TICKET) {
   const map = JSON.parse(readFileSync("data/tickets-files.json", "utf8"));
   files = map[TICKET];
   if (!files) { console.error(red(`No hay archivos mapeados para ${TICKET} en data/tickets-files.json`)); process.exit(1); }
-  const t = JSON.parse(readFileSync("data/tickets.json", "utf8")).find((x: any) => x.id === TICKET.replace(/-sample$/, ""));
+  const t = JSON.parse(readFileSync("data/tickets.json", "utf8")).find((x: any) => x.id === TICKET);
   ticketTitle = t?.title ?? "";
 } else if (arg("files")) {
   files = arg("files")!.split(",").map((s) => s.trim());
@@ -42,8 +42,8 @@ if (missing.length) {
   if (missing.some((f) => f.startsWith(MEDUSA))) console.error(`Clona Medusa: gh repo clone LIDR-academy/medusa ${MEDUSA} -- --depth 1  (o define MEDUSA_PATH en .env)`);
   process.exit(1);
 }
-/** Ruta corta para la tabla: sin el prefijo de Medusa ni de sample-app. */
-const short = (f: string) => f.replace(`${MEDUSA}/packages/`, "").replace("sample-app/", "");
+/** Ruta corta para la tabla: sin el prefijo de Medusa. */
+const short = (f: string) => f.replace(`${MEDUSA}/packages/`, "");
 
 const QUESTIONS = {
   // En inglés y con ejemplos: con el criterio vago, Jev real marcaba como "varias" cualquier orquestación (validar → llamar → mapear).
@@ -152,16 +152,6 @@ if (EXPLAIN && flagged.length) {
   }
   console.log(dim(`LLM: ${num(llmIn)} in / ${num(llmOut)} out tokens en ${flagged.length} llamadas; ${findings.length - flagged.length} funciones no costaron nada.`));
 }
-
-// 5) Contra lo sembrado (solo para el ensayo)
-try {
-  const seeded = JSON.parse(readFileSync("data/bugs-sembrados.json", "utf8"));
-  const expected = seeded.bugs.filter((b: any) => files.includes(b.file));
-  const hit = expected.filter((b: any) => findings.some((f) => f.file === b.file && f.fn.name === b.function && f.flags.some((x) => x.key === b.type || (b.type === "logica_sospechosa" && f.severity >= 1.5))));
-  const falsePos = seeded.controles.filter((c: any) => findings.some((f) => f.file === c.file && f.fn.name === c.function && f.flags.length));
-  // Solo tiene sentido en sample-app: en código real no hay lista de bugs conocidos.
-  if (expected.length) console.log(dim(`\nContra bugs-sembrados.json: ${hit.length}/${expected.length} detectados · falsos positivos en controles: ${falsePos.length}`));
-} catch {}
 
 mkdirSync("results", { recursive: true });
 writeFileSync("results/code-health.json", JSON.stringify({ at: new Date().toISOString(), ticket: TICKET, ticketTitle, files, mock: JEV_MOCK, jevMs, jevTokens: tokens, jevCost: jevCost(tokens), findings: findings.map((f) => ({ file: f.file, function: f.fn.name, lines: f.fn.lines, flags: f.flags, severity: f.severity, answers: f.answers, jevMs: f.jevMs, jevTokens: f.jevTokens, explanation: f.explanation })) }, null, 2));
