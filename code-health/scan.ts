@@ -5,6 +5,7 @@
  *   npm run scan -- --files=a.ts,b.ts
  *   npm run scan -- --ticket=T03 --explain  → las funciones marcadas van a Claude para explicación y propuesta de refactor
  *   npm run scan -- --ticket=T03 --mock
+ *   npm run scan -- --ticket=T03 --mode=direct  → el "antes": Claude revisa las 58 funciones, sin Jev (se precalcula)
  *
  * Patrón: por cada función, Jev responde 6 preguntas tipadas en una sola llamada (milisegundos, centavos).
  * Solo lo que Jev marca con probabilidad alta va al LLM. Jev encuentra dónde buscar; Claude encuentra qué.
@@ -13,12 +14,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { askJev, choice, noul, score, jevCost, MOCK as JEV_MOCK } from "../shared/jev.ts";
 import { splitFunctions, cheapSignals, similarTo, type Fn } from "./split.ts";
-import { explainFinding, LLM_MOCK } from "./explain.ts";
+import { explainFinding, reviewFunctionDirect, LLM_MOCK } from "./explain.ts";
+import { llmCost, mapLimit } from "../shared/prices.ts";
 import { table, bold, dim, green, yellow, red, cyan, gray, magenta, usd, num } from "../shared/ui.ts";
 
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split("=")[1];
 const TICKET = arg("ticket");
 const EXPLAIN = process.argv.includes("--explain");
+const MODE = (arg("mode") ?? "jev") as "jev" | "direct";
 const THRESHOLD = Number(process.env.SCAN_THRESHOLD ?? 0.6);
 
 let files: string[];
@@ -83,6 +86,8 @@ console.log(bold(`\nPre-vuelo${TICKET ? ` para ${TICKET}` : ""}`), ticketTitle ?
 const all: { file: string; fn: Fn }[] = [];
 for (const f of files) for (const fn of splitFunctions(readFileSync(f, "utf8"))) all.push({ file: f, fn });
 console.log(dim(`${all.length} funciones en ${files.length} archivos`));
+
+if (MODE === "direct") { await runDirect(); process.exit(0); }
 
 // 2) Jev por función, en paralelo
 // Caché de respuestas de Jev por función (results/.scan-cache.json): así `--explain` reutiliza lo que Jev dijo en el
@@ -156,3 +161,33 @@ if (EXPLAIN && flagged.length) {
 mkdirSync("results", { recursive: true });
 writeFileSync("results/code-health.json", JSON.stringify({ at: new Date().toISOString(), ticket: TICKET, ticketTitle, files, mock: JEV_MOCK, jevMs, jevTokens: tokens, jevCost: jevCost(tokens), findings: findings.map((f) => ({ file: f.file, function: f.fn.name, lines: f.fn.lines, flags: f.flags, severity: f.severity, answers: f.answers, jevMs: f.jevMs, jevTokens: f.jevTokens, explanation: f.explanation })) }, null, 2));
 console.log(dim("→ results/code-health.json"));
+
+/**
+ * El "antes" de la demo 2: sin Jev no sabes qué funciones mirar, así que Claude revisa todas. Cada función es una
+ * llamada a Sonnet con el código completo. Se corre una vez antes de la sesión y queda en
+ * results/code-health-direct.json; `npm run costs` la pone junto a la corrida con Jev.
+ */
+async function runDirect() {
+  console.log(bold(`Modo ${magenta("direct")}: Claude revisa las ${all.length} funciones`), dim(`· sin Jev · llm ${LLM_MOCK ? yellow("MOCK") : green("real")}\n`));
+  const t0 = performance.now();
+  // Concurrencia acotada: con CLAUDE_ENGINE=cli cada función abre un proceso `claude -p`.
+  const reviews = await mapLimit(all, Number(arg("concurrency") ?? 6), async ({ file, fn }) => ({ file, fn, r: await reviewFunctionDirect(file, fn, ticketTitle) }));
+  const totalMs = Math.round(performance.now() - t0);
+
+  const flagged = reviews.filter((x) => x.r.flags.length);
+  console.log(table(["Archivo", "Función", "Líneas", "Lo que marcó Claude", "Tokens in/out", "ms"],
+    flagged.map((x) => [cyan(short(x.file)), bold(x.fn.name), String(x.fn.lines), x.r.flags.join(", "), `${x.r.input_tokens}/${x.r.output_tokens}`, `${x.r.ms}`]),
+    { align: ["l", "l", "r", "l", "r", "r"] }));
+
+  const inTok = reviews.reduce((s, x) => s + x.r.input_tokens, 0), outTok = reviews.reduce((s, x) => s + x.r.output_tokens, 0);
+  const cost = reviews.reduce((s, x) => s + llmCost(x.r.model, x.r.input_tokens, x.r.output_tokens), 0);
+  console.log(`
+${bold("Claude")}  ${reviews.length} funciones · ${reviews.length} llamadas · ${(totalMs / 1000).toFixed(1)} s · ${num(inTok)} in / ${num(outTok)} out · ${bold(usd(cost))}
+        ${red(flagged.length + " marcadas")} · ${green(reviews.length - flagged.length + " limpias")} → las limpias también costaron: hubo que leerlas para saberlo
+`);
+
+  mkdirSync("results", { recursive: true });
+  writeFileSync("results/code-health-direct.json", JSON.stringify({ at: new Date().toISOString(), mode: "direct", ticket: TICKET, ticketTitle, files, mock: LLM_MOCK, totalMs, tokens: { input: inTok, output: outTok }, cost,
+    findings: reviews.map((x) => ({ file: x.file, function: x.fn.name, lines: x.fn.lines, flags: x.r.flags, review: { model: x.r.model, text: x.r.text, input_tokens: x.r.input_tokens, output_tokens: x.r.output_tokens, ms: x.r.ms } })) }, null, 2));
+  console.log(dim("→ results/code-health-direct.json"));
+}

@@ -24,7 +24,7 @@ Reglas: nunca imprimas el contenido de .env ni ninguna llave; nunca hagas commit
 Confirma que entendiste el patrón "estado → pregunta tipada → Jev → probabilidad → tu código decide → acción" y corre `node --version`, `npm test`, `npm run batch -- --mock`, `npm run scan -- --ticket=T03 --explain --mock` y `npm run costs`. Reporta si algo falla.
 ```
 
-**Debe salir:** 10 tests en verde, la tabla de 30 tickets con 3 escalados, el pre-vuelo sobre Medusa (58 funciones, pocas marcadas) y la tabla de costes.
+**Debe salir:** 14 tests en verde, la tabla de 30 tickets con 3 escalados, el pre-vuelo sobre Medusa (58 funciones, pocas marcadas) y la tabla de costes.
 
 ---
 

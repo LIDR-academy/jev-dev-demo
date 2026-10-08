@@ -13,7 +13,7 @@ Sin dependencias. **Node 22.18+** corre TypeScript directo, trae `fetch` y lee `
 ```bash
 git clone <este-repo> && cd jev-dev-demo
 cp .env.example .env            # llena las llaves (o ensaya sin ellas con --mock)
-npm test                        # 10 pruebas de los umbrales
+npm test                        # 14 pruebas: umbrales y lectura de respuestas del LLM
 npm run batch -- --mock                                  # demo 1 sin Jev ni Jira
 npm run scan -- --ticket=T03 --explain --mock            # demo 2 sin llaves (necesita ../medusa-fork)
 npm run review -- --mode=direct --mock && npm run review -- --mode=jev --mock && npm run compare   # demo 3 sin llaves
@@ -31,12 +31,13 @@ npm run costs                                            # coste de cada ejecuci
 | `jira-triage/jira.ts` | Cliente de Jira Cloud REST v3. Mapeo de opciones de Jev a tipos/prioridades de Jira. |
 | `jira-triage/server.ts` | Servidor de webhooks (`node:http`): `/webhook/jira`, `/webhook/github`, `/health`. |
 | `jira-triage/triage.ts` | Clasifica issues que ya existen (`npm run triage -- KAN-128`). Lo usa el skill `/triage` después de crear el issue con el MCP de Atlassian. |
-| `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. |
+| `jira-triage/batch.ts` | Clasifica los 30 tickets de golpe, imprime tabla, totales y aciertos contra `expected`. Con `--mode=direct`, el "antes": Sonnet clasifica los mismos issues de Jira (solo lectura). |
 | `../medusa-fork` | Clon de `LIDR-academy/medusa` (ruta en `MEDUSA_PATH`). Es el código que "vas a tocar" en la demo 2. |
 | `data/tickets-files.json` | Qué archivos toca cada ticket. `T03` → Medusa. |
 | `code-health/scan.ts` | **Demo 2.** Parte los archivos en funciones, calcula señales baratas, pregunta a Jev 6 cosas por función y manda solo lo marcado a Claude (`--explain`). |
 | `code-health/split.ts` | Particionador de funciones sin AST + señales (líneas, awaits, efectos, catch sospechoso, literales, parámetros mutados). |
-| `code-health/explain.ts` | Claude explica una función marcada y propone el refactor mínimo. |
+| `code-health/explain.ts` | Claude explica una función marcada y propone el refactor mínimo. Con `scan --mode=direct`, el "antes": Claude revisa todas las funciones. |
+| `shared/prices.ts` | Precios de `llm-router/prices.json`, costo por llamada y concurrencia acotada para los modos `direct`. |
 | `scripts/costs.ts` | **Costes por ejecución**: tokens y USD de Jev y LLM en cada demo, total de la demo. |
 | `.claude/skills/pre-vuelo/` | Skill de Claude Code `/pre-vuelo T03`: corre el escaneo y lo presenta con recomendación de orden. |
 | `.claude/skills/costos/` | Skill `/costos`: explica el coste de cada ejecución en lenguaje natural. |
@@ -151,16 +152,35 @@ Si además quieres **abrir una PR en vivo** y que el router la comente al instan
 ### 5. Ensayo
 
 ```bash
-npm run reset
+npm run reset                                   # conserva los "antes" precalculados (--baselines también los borra)
+# una vez, antes de la sesión: los tres "antes" (todo al LLM, sin Jev)
+npm run batch -- --mode=direct                  # ~20 s · lee los 22 issues de KAN, no escribe en Jira
+npm run scan -- --ticket=T03 --mode=direct      # ~45 s · Claude revisa las 58 funciones de Medusa
+npm run review -- --mode=direct --data=data/prs-fork.json   # ~40 s · las 20 PRs del fork a Sonnet
 # en Claude Code: /triage <queja de cliente> → crea el issue con el MCP y Jev lo clasifica
 npm run batch -- --no-create                    # los 30 importados por CSV
-npm run review -- --mode=direct                 # 1–2 min; NO en vivo, precalcula
 npm run review -- --mode=jev --concurrency=3    # ~40 s; este sí en vivo
 npm run compare
 npm run show-review -- PR-17099
 ```
 
 Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como respaldo.
+
+## Antes y después
+
+Cada demo tiene su "antes": lo que se hace hoy con IA, mandarlo todo a Sonnet. Corre sobre los mismos datos reales (los issues de KAN, el código de Medusa, las PRs del fork) y con las mismas opciones que se le dan a Jev, para que la comparación sea justa. Se precalcula una vez (`--mode=direct`) y `npm run costs` pone cada antes junto a su después. Números del ensayo del 7 de octubre:
+
+| Demo | Antes: todo a Sonnet | Después: Jev decide | Qué decir |
+| --- | --- | --- | --- |
+| 1 · Triage (22 issues) | 22 llamadas · $0.078 · 20 s · 19/19 | 22 llamadas a Jev · $0.0009 · 1.4 s · 19/19 | Misma precisión, ~87× más barato y ~14× más rápido. Y Sonnet no da probabilidades: o aplica o escala; no existe "aplicar y marcar para revisión". |
+| 2 · Pre-vuelo (58 funciones) | 58 llamadas · $0.235 · 42 s · 15 marcadas | Jev 58 + Claude 2 · $0.022 · ~12 s · 2 marcadas | Las 2 de Jev están entre las 15 de Claude. Claude pagó por leer las 43 limpias para saber que lo eran. |
+| 3 · Router (20 PRs) | 20 a Sonnet · $0.166 · 38 s | rules 10 · haiku 2 · sonnet 8 · $0.077 | −53 %, y la PR de pagos recibe la misma revisión. |
+
+El código del antes está junto al del después, para enseñarlo en pantalla:
+
+- **Demo 1:** `classifyTicketDirect` en `jira-triage/classify.ts` arma el prompt con los mismos `criteria` que `TICKET_QUESTIONS` y pide JSON. `parseDirectTicket` lo valida: si el LLM inventa una opción, es error (Jev siempre elige una de las dadas).
+- **Demo 2:** `reviewFunctionDirect` en `code-health/explain.ts` pide las mismas cinco señales con las mismas claves (`MARCAS: traga_errores, …`) para poder contarlas.
+- **Demo 3:** `npm run review -- --mode=direct` manda cada PR a Sonnet con el mismo prompt que usa la ruta sonnet del router.
 
 ## El día de la demo (30 min: 10 + 8 + 8 + 4)
 
@@ -177,7 +197,7 @@ Cronométralo dos veces, una con hotspot del celular. Graba las tres demos como 
 | 13 | `npm run scan -- --ticket=T03 --explain` (o `/pre-vuelo T03` en Claude Code). Reutiliza las respuestas de Jev del minuto 11: mismos números, ~7 s | Claude explica solo las marcadas: el `catch` vacío de `roundToCurrencyPrecision` (y, si entra, el "ya reembolsado" que Stripe se traga) |
 | 15 | El `node -e` de JPY (sección 3b) | `JPY → TypeError`: el bug latente que el `catch` esconde, en vivo |
 | 16 | Señalas las 57 limpias | "Estas no gastaron un token. Jev dijo que estaban limpias." |
-| 17 | `npm run costs -- --demo=1,2` | Demo 1 y demo 2 en centavos; Jev vs LLM (sin mostrar aún el direct precalculado de la demo 3) |
+| 17 | `npm run costs -- --demo=1,2` | Demo 1 y demo 2, cada una con su fila direct (todo a Sonnet) y su fila jev: ~87× y ~10× más barato (sin mostrar aún la demo 3) |
 | **18** | **Demo 3.** Lista de PRs abiertas del fork en el navegador + resumen de `direct` ya calculado | 20 PRs reales esperando revisión. Todo a Sonnet: tantos tokens, tanto costo |
 | 19 | VS Code: `llm-router/router.ts` | Una pregunta, tres caminos |
 | 20 | `npm run review -- --mode=jev --data=data/prs-fork.json --comment` | Terminal: cada PR con ruta y confianza. Navegador: los comentarios aparecen en las PRs |

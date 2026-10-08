@@ -5,13 +5,11 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { table, bold, dim, gray, usd, num } from "../shared/ui.ts";
+import { price, llmCost as cost } from "../shared/prices.ts";
 
-const prices: Record<string, { input_per_m: number; output_per_m: number }> = JSON.parse(readFileSync("llm-router/prices.json", "utf8"));
 const JEV = process.env.JEV_MODEL ?? "jev-1.13.0";
 const SMALL = process.env.MODEL_SMALL ?? "claude-haiku-4-5";
 const LARGE = process.env.MODEL_LARGE ?? "claude-sonnet-5-5";
-const price = (m: string) => prices[m] ?? prices[m.replace(" (mock)", "")] ?? { input_per_m: 0, output_per_m: 0 };
-const cost = (m: string, i: number, o: number) => (i / 1e6) * price(m).input_per_m + (o / 1e6) * price(m).output_per_m;
 
 type Row = { ejecucion: string; at: string; unidades: number; jevCalls: number; jevTokens: number; jevUsd: number; llmCalls: number; llmIn: number; llmOut: number; llmUsd: number; totalUsd: number; ms: number; mock: boolean };
 const rows: Row[] = [];
@@ -21,7 +19,11 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
   const d = JSON.parse(readFileSync(`results/${f}`, "utf8"));
   if (f === "triage.json") {
     const jt = d.tokens ?? d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
-    rows.push({ ejecucion: "Demo 1 · triage de Jira", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
+    rows.push({ ejecucion: "Demo 1 · triage de Jira (jev)", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
+  } else if (f === "triage-direct.json") {
+    // El "antes" de la demo 1: Sonnet clasifica cada ticket, sin Jev (batch --mode=direct).
+    const llmIn = d.tokens.input, llmOut = d.tokens.output, llmUsd = d.results.reduce((s: number, r: any) => s + cost(r.model, r.input_tokens, r.output_tokens), 0);
+    rows.push({ ejecucion: "Demo 1 · triage de Jira (direct)", at: d.at, unidades: d.results.length, jevCalls: 0, jevTokens: 0, jevUsd: 0, llmCalls: d.results.length, llmIn, llmOut, llmUsd, totalUsd: llmUsd, ms: d.totalMs, mock: d.mock });
   } else if (f === "triage-vivo.json") {
     const jt = d.results.reduce((s: number, r: any) => s + (r.inputTokens ?? 0), 0);
     rows.push({ ejecucion: "Demo 1 · triage en vivo (MCP)", at: d.at, unidades: d.results.length, jevCalls: d.results.length, jevTokens: jt, jevUsd: (jt / 1e6) * price(JEV).input_per_m, llmCalls: 0, llmIn: 0, llmOut: 0, llmUsd: 0, totalUsd: (jt / 1e6) * price(JEV).input_per_m, ms: d.jevMs, mock: d.mock });
@@ -29,7 +31,11 @@ for (const f of readdirSync("results").filter((x) => x.endsWith(".json")).sort()
     const ex = d.findings.filter((x: any) => x.explanation);
     const llmIn = ex.reduce((s: number, x: any) => s + x.explanation.input_tokens, 0), llmOut = ex.reduce((s: number, x: any) => s + x.explanation.output_tokens, 0);
     const llmUsd = cost(LARGE, llmIn, llmOut);
-    rows.push({ ejecucion: `Demo 2 · pre-vuelo ${d.ticket ?? ""}`, at: d.at, unidades: d.findings.length, jevCalls: d.findings.length, jevTokens: d.jevTokens, jevUsd: d.jevCost, llmCalls: ex.length, llmIn, llmOut, llmUsd, totalUsd: d.jevCost + llmUsd, ms: d.jevMs, mock: d.mock });
+    rows.push({ ejecucion: `Demo 2 · pre-vuelo ${d.ticket ?? ""} (jev)`, at: d.at, unidades: d.findings.length, jevCalls: d.findings.length, jevTokens: d.jevTokens, jevUsd: d.jevCost, llmCalls: ex.length, llmIn, llmOut, llmUsd, totalUsd: d.jevCost + llmUsd, ms: d.jevMs, mock: d.mock });
+  } else if (f === "code-health-direct.json") {
+    // El "antes" de la demo 2: Claude revisa todas las funciones, sin Jev (scan --mode=direct).
+    const llmUsd = d.findings.reduce((s: number, x: any) => s + cost(x.review.model, x.review.input_tokens, x.review.output_tokens), 0);
+    rows.push({ ejecucion: `Demo 2 · pre-vuelo ${d.ticket ?? ""} (direct)`, at: d.at, unidades: d.findings.length, jevCalls: 0, jevTokens: 0, jevUsd: 0, llmCalls: d.findings.length, llmIn: d.tokens.input, llmOut: d.tokens.output, llmUsd, totalUsd: llmUsd, ms: d.totalMs, mock: d.mock });
   } else if (f === "direct.json" || f === "jev.json" || f === "cierre.json") {
     let llmIn = 0, llmOut = 0, llmUsd = 0, llmCalls = 0, jevTokens = 0;
     for (const r of d.results) {
